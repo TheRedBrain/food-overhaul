@@ -1,41 +1,35 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "foodoverhaul",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Food Overhaul",
+	"description": "This Minecraft mod overhauls the food system.",
 	"authors": [
-		"Me!"
+		"TheRedBrain"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/TheRedBrain/foodoverhaul"
 	},
-	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"license": "MIT",
 	"environment": "*",
+	"accessWidener": "foodoverhaul.accesswidener",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
+			"com.github.theredbrain.foodoverhaul.FoodOverhaul"
 		],
 		"client": [
-			"com.example.ExampleModClient"
+			"com.github.theredbrain.foodoverhaul.FoodOverhaulClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
-		{
-			"config": "modid.client.mixins.json",
-			"environment": "client"
-		}
+		"foodoverhaul.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.10",
-		"minecraft": "~1.20.5",
-		"java": ">=21",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
+		"fabricloader": ">=0.14.20",
+		"minecraft": "1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"manaattributes": ">=1.1.0",
+		"staminaattributes": ">=1.2.0"
 	}
 }

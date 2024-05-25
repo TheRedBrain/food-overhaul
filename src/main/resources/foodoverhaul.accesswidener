@@ -1,0 +1,4 @@
+accessWidener v1 named
+
+# TODO 1.20.6 remove
+mutable field net/minecraft/item/Item foodComponent Lnet/minecraft/item/FoodComponent;
