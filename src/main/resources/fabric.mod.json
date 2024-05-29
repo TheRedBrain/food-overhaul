@@ -29,7 +29,10 @@
 		"minecraft": "1.20.1",
 		"java": ">=17",
 		"fabric-api": "*",
+		"cloth-config": ">=11.1.106",
 		"manaattributes": ">=1.1.0",
-		"staminaattributes": ">=1.2.0"
+		"staminaattributes": ">=1.2.0",
+		"overhauleddamage": ">=1.2.0",
+		"healthregenerationoverhaul": ">=1.0.0"
 	}
 }

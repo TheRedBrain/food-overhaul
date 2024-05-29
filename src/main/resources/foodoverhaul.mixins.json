@@ -5,15 +5,11 @@
   "mixins": [
     "entity.LivingEntityMixin",
     "entity.attribute.EntityAttributesMixin",
-    "entity.player.HungerManagerMixin",
     "entity.player.PlayerEntityMixin",
     "item.ItemMixin",
     "item.TemporaryItemAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "client": [
-    "client.gui.hud.InGameHudMixin"
-  ]
+  }
 }

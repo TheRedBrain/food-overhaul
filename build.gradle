@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.5-SNAPSHOT'
+	id 'fabric-loom' version '1.6-SNAPSHOT'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 }
@@ -23,24 +23,13 @@ repositories {
 		url = "https://maven.terraformersmc.com/"
 	}
 
-	// Mana Attributes, Stamina Attributes, Overhauled Damage, Spell Power, Spell Engine
+	// Mana Attributes, Stamina Attributes, Overhauled Damage, Health Regeneration Overhaul
 	maven {
 		name = "Modrinth"
 		url = "https://api.modrinth.com/maven"
 		content {
 			includeGroup "maven.modrinth"
 		}
-	}
-
-	// Player Animator
-	maven {
-		name "KosmX's maven"
-		url 'https://maven.kosmx.dev/'
-	}
-
-	// Tiny Config
-	maven {
-		url 'https://jitpack.io'
 	}
 
 }
@@ -73,17 +62,8 @@ dependencies {
 	// Overhauled Damage
 	modImplementation "maven.modrinth:overhauled-damage:${project.overhauled_damage_version}"
 
-	// Spell Engine
-	modImplementation("maven.modrinth:spell-engine:${project.spell_engine_version}")
-
-	// Spell Power
-	modImplementation("maven.modrinth:spell-power:${project.spell_power_version}")
-
-	// Player Animation Lib
-	modImplementation("dev.kosmx.player-anim:player-animation-lib-fabric:${project.player_anim}")
-
-	// Tiny Config
-	implementation ("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
+	// Health Regeneration Overhaul
+	modImplementation "maven.modrinth:health-regeneration-overhaul:${project.health_regeneration_overhaul_version}"
 
 }
 
@@ -113,6 +93,26 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
+}
+
+import com.modrinth.minotaur.dependencies.ModDependency
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = 'UigDbuvI' // The ID of your Modrinth project. Slugs will not work.
+	versionNumber = mod_version
+	versionType = "release" // can also be "beta" or "alpha"
+	uploadFile = remapJar
+	gameVersions = ['1.20.1'] // An array of game versions the version supports
+	loaders = ['fabric']
+	dependencies = [
+			new ModDependency('P7dR8mSH', 'required'), // Fabric API
+			new ModDependency('9s6osm5g', 'required'), // Cloth Config
+			new ModDependency('ckXJT3cX', 'required'), // Health Regeneration Overhaul
+			new ModDependency('1uXUV3Qn', 'required'), // Mana Attributes
+			new ModDependency('OifMIGuH', 'required'), // Overhauled Damage
+			new ModDependency('QKOE26gD', 'required') // Stamina Attributes
+	]
+	changelog = "${update_changelog}"
 }
 
 // configure the maven publication

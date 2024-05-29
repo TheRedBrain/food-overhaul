@@ -92,5 +92,4 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
     public float foodoverhaul$getMaxFoodEffects() {
         return (float) this.getAttributeValue(FoodOverhaul.MAX_FOOD_EFFECTS);
     }
-
 }
