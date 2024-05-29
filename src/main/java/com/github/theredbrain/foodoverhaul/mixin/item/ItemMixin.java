@@ -19,7 +19,7 @@ public abstract class ItemMixin {
     @Shadow public abstract boolean isFood();
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    public void use(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+    public void foodoverhaul$use(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         if (this.isFood()) {
             ItemStack itemStack = user.getStackInHand(hand);
             if (((DuckPlayerEntityMixin) user).foodoverhaul$canConsumeItem(itemStack)) {

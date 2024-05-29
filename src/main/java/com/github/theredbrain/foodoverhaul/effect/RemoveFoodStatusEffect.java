@@ -1,6 +1,5 @@
 package com.github.theredbrain.foodoverhaul.effect;
 
-import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.InstantStatusEffect;
@@ -24,7 +23,6 @@ public class RemoveFoodStatusEffect extends InstantStatusEffect {
     }
 
     private void removeAllFoodEffects(LivingEntity livingEntity) {
-        FoodOverhaul.LOGGER.info("removeAllFoodEffects");
         for (StatusEffectInstance currentEffect : livingEntity.getStatusEffects().stream().toList()) {
             if (currentEffect.getEffectType() instanceof FoodStatusEffect) {
                 livingEntity.removeStatusEffect(currentEffect.getEffectType());

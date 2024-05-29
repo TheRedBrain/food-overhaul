@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class LivingEntityMixin {
 
     @Inject(method = "createLivingAttributes", at = @At("RETURN"))
-    private static void betteradventuremode$createLivingAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
+    private static void foodoverhaul$createLivingAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
         cir.getReturnValue()
                 .add(FoodOverhaul.MAX_FOOD_EFFECTS)
         ;

@@ -34,7 +34,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
     }
 
     @Inject(method = "createPlayerAttributes", at = @At("RETURN"))
-    private static void betteradventuremode$createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
+    private static void foodoverhaul$createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
         cir.getReturnValue()
                 .add(FoodOverhaul.MAX_FOOD_EFFECTS, 3)
         ;
@@ -42,12 +42,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 
 //    // TODO 1.60.6
 //    @Unique
-//    public boolean betteradventuremode$canConsumeItem(ItemStack itemStack) {
+//    public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
 //        FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
 //        if (foodComponent != null) {
 //            for (FoodComponent.StatusEffectEntry statusEffectEntry : foodComponent.effects()) {
 //                if (getWorld().isClient) continue;
-//                return betteradventuremode$tryEatAdventureFood(statusEffectEntry.effect());
+//                return foodoverhaul$tryEatAdventureFood(statusEffectEntry.effect());
 //            }
 //        }
 //        return false;
