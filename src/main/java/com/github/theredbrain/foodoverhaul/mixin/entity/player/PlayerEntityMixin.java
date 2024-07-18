@@ -10,6 +10,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
+import java.util.Collection;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlayerEntityMixin {
@@ -32,6 +33,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 	@Shadow
 	public abstract ItemStack getEquippedStack(EquipmentSlot slot);
 
+	@Shadow
+	public abstract ItemCooldownManager getItemCooldownManager();
+
 	protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
 		super(entityType, world);
 	}
@@ -41,6 +45,11 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 		cir.getReturnValue()
 				.add(FoodOverhaul.MAX_FOOD_EFFECTS, 3)
 		;
+	}
+
+	@Inject(method = "eatFood", at = @At(value = "RETURN"))
+	public void foodoverhaul$eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
+		this.getItemCooldownManager().set(stack.getItem(), 5);
 	}
 
 	@Unique
@@ -57,16 +66,16 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 
 	@Unique
 	public boolean foodoverhaul$tryEatOverhauledFood(StatusEffectInstance statusEffectInstance) {
-		if (getStatusEffects().isEmpty()) {
+		if (this.getStatusEffects().isEmpty()) {
 			return true;
 		} else {
 			int currentEatenFoods = 0;
-			List<StatusEffectInstance> currentEffects = getStatusEffects().stream().toList();
-			for (StatusEffectInstance currentEffect : currentEffects) {
+			Collection<StatusEffectInstance> collection = this.getStatusEffects();
+			for (StatusEffectInstance currentEffect : collection) {
 				if (currentEffect.getEffectType() == statusEffectInstance.getEffectType() && !statusEffectInstance.isDurationBelow(FoodOverhaul.serverConfig.food_effect_duration_threshold_to_allow_eating)) {
 					this.sendMessage(Text.translatable("hud.message.foodEatenAlready").append(Text.translatable(currentEffect.getTranslationKey())), true);
 					return false;
-				} else if (currentEffect.getEffectType() instanceof FoodStatusEffect) {
+				} else if (currentEffect.getEffectType().value() instanceof FoodStatusEffect) {
 					currentEatenFoods++;
 				}
 			}
