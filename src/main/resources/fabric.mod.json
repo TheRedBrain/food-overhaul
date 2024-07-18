@@ -13,7 +13,6 @@
 	"license": "MIT",
 	"icon": "assets/foodoverhaul/icon.png",
 	"environment": "*",
-	"accessWidener": "foodoverhaul.accesswidener",
 	"entrypoints": {
 		"main": [
 			"com.github.theredbrain.foodoverhaul.FoodOverhaul"
@@ -26,14 +25,14 @@
 		"foodoverhaul.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.14.20",
-		"minecraft": "1.20.1",
-		"java": ">=17",
+		"fabricloader": ">=0.15.11",
+		"minecraft": "1.21",
+		"java": ">=21",
 		"fabric-api": "*",
-		"cloth-config": ">=11.1.106",
-		"manaattributes": ">=1.1.0",
-		"staminaattributes": ">=1.2.0",
-		"overhauleddamage": ">=1.2.0",
-		"healthregenerationoverhaul": ">=1.0.0"
+		"cloth-config": ">=15.0.127",
+		"manaattributes": ">=2.0.0",
+		"staminaattributes": ">=2.0.0",
+		"overhauleddamage": ">=2.0.1",
+		"healthregenerationoverhaul": ">=2.0.0"
 	}
 }

@@ -3,7 +3,8 @@ package com.github.theredbrain.foodoverhaul.mixin.entity.player;
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.effect.FoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
-import com.mojang.datafixers.util.Pair;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -40,26 +41,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
         ;
     }
 
-//    // TODO 1.60.6
-//    @Unique
-//    public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
-//        FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
-//        if (foodComponent != null) {
-//            for (FoodComponent.StatusEffectEntry statusEffectEntry : foodComponent.effects()) {
-//                if (getWorld().isClient) continue;
-//                return foodoverhaul$tryEatAdventureFood(statusEffectEntry.effect());
-//            }
-//        }
-//        return false;
-//    }
-
     @Unique
     public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
-        if (itemStack.getItem().getFoodComponent() != null) {
-            List<Pair<StatusEffectInstance, Float>> list = itemStack.getItem().getFoodComponent().getStatusEffects();
-            for (Pair<StatusEffectInstance, Float> pair : list) {
-                if (getWorld().isClient || pair.getFirst() == null) continue;
-                return !(pair.getFirst().getEffectType() instanceof FoodStatusEffect) || foodoverhaul$tryEatOverhauledFood(pair.getFirst());
+        FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
+        if (foodComponent != null) {
+            for (FoodComponent.StatusEffectEntry statusEffectEntry : foodComponent.effects()) {
+                if (getWorld().isClient) continue;
+                return foodoverhaul$tryEatOverhauledFood(statusEffectEntry.effect());
             }
         }
         return false;

@@ -13,8 +13,9 @@ public class RemoveFoodStatusEffect extends InstantStatusEffect {
     }
 
     @Override
-    public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+    public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
         this.removeAllFoodEffects(entity);
+        return true;
     }
 
     @Override
