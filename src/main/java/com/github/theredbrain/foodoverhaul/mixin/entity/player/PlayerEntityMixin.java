@@ -72,9 +72,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 			int currentEatenFoods = 0;
 			Collection<StatusEffectInstance> collection = this.getStatusEffects();
 			for (StatusEffectInstance currentEffect : collection) {
-				if (currentEffect.getEffectType() == statusEffectInstance.getEffectType() && !statusEffectInstance.isDurationBelow(FoodOverhaul.serverConfig.food_effect_duration_threshold_to_allow_eating)) {
-					this.sendMessage(Text.translatable("hud.message.foodEatenAlready").append(Text.translatable(currentEffect.getTranslationKey())), true);
-					return false;
+				if (currentEffect.getEffectType() == statusEffectInstance.getEffectType()) {
+					if (currentEffect.isDurationBelow(FoodOverhaul.serverConfig.food_effect_duration_threshold_to_allow_eating)) {
+						return true;
+					} else {
+						this.sendMessage(Text.translatable("hud.message.foodEatenAlready").append(Text.translatable(currentEffect.getTranslationKey())), true);
+						return false;
+					}
 				} else if (currentEffect.getEffectType().value() instanceof FoodStatusEffect) {
 					currentEatenFoods++;
 				}
