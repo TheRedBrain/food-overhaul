@@ -17,18 +17,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Item.class)
 public abstract class ItemMixin {
 
-    @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    public void foodoverhaul$use(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        ItemStack itemStack = user.getStackInHand(hand);
-        FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
-        if (foodComponent != null) {
-            if (((DuckPlayerEntityMixin) user).foodoverhaul$canConsumeItem(itemStack)) {
-                user.setCurrentHand(hand);
-                cir.setReturnValue(TypedActionResult.consume(itemStack));
-            } else {
-                cir.setReturnValue(TypedActionResult.fail(itemStack));
-            }
-            cir.cancel();
-        }
-    }
+	@Inject(method = "use", at = @At("HEAD"), cancellable = true)
+	public void foodoverhaul$use(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+		ItemStack itemStack = user.getStackInHand(hand);
+		FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
+		if (foodComponent != null) {
+			if (((DuckPlayerEntityMixin) user).foodoverhaul$canConsumeItem(itemStack)) {
+				user.setCurrentHand(hand);
+				cir.setReturnValue(TypedActionResult.consume(itemStack));
+			} else {
+				cir.setReturnValue(TypedActionResult.fail(itemStack));
+			}
+			cir.cancel();
+		}
+	}
 }

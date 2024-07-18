@@ -337,5 +337,6 @@ public class StatusEffectsRegistry {
 //            .addAttributeModifier(StaminaAttributes.STAMINA_REGENERATION, FoodOverhaul.identifier("effect.tropical_fish_food_effect"), 1.0F, EntityAttributeModifier.Operation.ADD_VALUE)
 	);
 
-	public static void init() {}
+	public static void init() {
+	}
 }

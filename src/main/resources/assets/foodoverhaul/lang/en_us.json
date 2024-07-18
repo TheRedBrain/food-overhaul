@@ -1,6 +1,5 @@
 {
 	"attribute.name.generic.max_food_effects": "Max Food Effects",
-
 	"effect.foodoverhaul.apple_food_effect": "Apple",
 	"effect.foodoverhaul.baked_potato_food_effect": "Baked Potato",
 	"effect.foodoverhaul.beef_food_effect": "Beef",
@@ -47,7 +46,6 @@
 	"effect.foodoverhaul.suspicious_stew_food_effect": "Suspicious Stew",
 	"effect.foodoverhaul.sweet_berries_food_effect": "Sweet Berries",
 	"effect.foodoverhaul.tropical_fish_food_effect": "Tropical Fish",
-
 	"hud.message.foodEatenAlready": "You can't eat more ",
 	"hud.message.maxFoodEaten": "You are full."
 }
