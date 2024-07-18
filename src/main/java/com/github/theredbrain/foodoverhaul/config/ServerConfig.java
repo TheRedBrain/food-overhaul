@@ -13,6 +13,10 @@ public class ServerConfig implements ConfigData {
 			their corresponding food type can be eaten again
 			""")
 	public int food_effect_duration_threshold_to_allow_eating = 200;
+	@Comment("""
+			Eating a food item applies an item cooldown of this many ticks to that item
+			""")
+	public int item_cooldown_after_eating = 5;
 
 	public ServerConfig() {
 

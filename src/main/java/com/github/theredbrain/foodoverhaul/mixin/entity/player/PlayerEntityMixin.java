@@ -49,7 +49,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 
 	@Inject(method = "eatFood", at = @At(value = "RETURN"))
 	public void foodoverhaul$eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-		this.getItemCooldownManager().set(stack.getItem(), 5);
+		this.getItemCooldownManager().set(stack.getItem(), FoodOverhaul.serverConfig.item_cooldown_after_eating);
 	}
 
 	@Unique
