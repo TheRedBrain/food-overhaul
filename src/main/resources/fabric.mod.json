@@ -11,6 +11,7 @@
 		"sources": "https://github.com/TheRedBrain/foodoverhaul"
 	},
 	"license": "MIT",
+	"icon": "assets/foodoverhaul/icon.png",
 	"environment": "*",
 	"accessWidener": "foodoverhaul.accesswidener",
 	"entrypoints": {
