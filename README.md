@@ -34,8 +34,10 @@ Food effects can be added to any item (even modded) by vanilla methods (mainly c
 
 https://modrinth.com/mod/item-components and https://modrinth.com/mod/default-components both allow setting the default components of items via data packs. 
 
-> A note about hunger and saturation.
-> 
-> Food Overhaul does not remove these systems. They can be used in combination with the food effects.
+### Hunger and saturation
+
+Food Overhaul does not remove these systems. They can be used in combination with the food effects.
+
+By default, food items without a food effect can be eaten like normal. This can be disabled in the server config.
 
 > If the food system should be completely gone from your mod pack, maybe take a look at my mod [Health Regeneration Overhaul](https://modrinth.com/mod/health-regeneration-overhaul), which can completely disable vanillas hunger system including saturation and exhaustion.
