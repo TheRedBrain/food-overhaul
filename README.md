@@ -1,19 +1,41 @@
 # Food Overhaul
 
-Eating food no longer fills the hunger bar or gives saturation. Each food item now grants a corresponding status effect instead. 
+This is an overhaul for the food system. Eating food no longer fills the hunger bar or gives saturation. Each food item now grants a corresponding status effect instead. 
+These effects can grant attribute modifiers like increased health, more stamina or resistance against frost damage.
 
-These effects affect the player in various ways, like increasing health, stamina or mana.
-More exotic food increases attributes like frost resistance.
+This gives players a real choice, when they decide what combination of food is the best for a given situation, which in my opinion is much more interesting than eating golden carrots all day.
 
-Most of these attributes are provided by the mods [Health Regeneration Overhaul](https://modrinth.com/mod/health-regeneration-overhaul), [Mana Attributes](https://modrinth.com/mod/mana-attributes), [Overhauled Damage](https://modrinth.com/mod/overhauled-damage) and [Stamina Attributes](https://modrinth.com/mod/stamina-attributes).
+Food Overhaul adds the back end system for this new food system, but it does not add gameplay content on its own.
 
-## What prevents a player from eating every available food?
+This ensures that mod pack authors have the most possible control over how exactly their food items are balanced.
+
+## How does it work?
+
+Food items in Minecraft can apply status effects. Food Overhaul uses that functionality and simply checks if one of those status effects is a "food effect".
+If an item grants such an effect, the food can only be eaten when the player does not already have that food effect.
+
+> A status effect is considered a food effect when their effect type extends [FoodStatusEffect](https://github.com/TheRedBrain/food-overhaul/blob/1.21.1/src/main/java/com/github/theredbrain/foodoverhaul/effect/FoodStatusEffect.java).
+
+### What prevents a player from eating every available food?
 
 Each player can only have a limited amount of food status effects active at a time. It's not possible to eat food when that limit is reached.
 The limit is controlled by an entity attribute called **_generic.max_food_effects_** and is 3 by default.
 
-This gives the player the options to eat the best food for the given situation, which in my opinion is much more interesting than eating golden carrots all day.
-
+The player doesn't have to wait until an effect is completely gone to refresh it.
 When a food effect is running out, it's corresponding food item can be consumed again. The exact threshold after which this is possible is set in the server config.
 
-When a player wants to reset their currently active food effects, they can eat a piece of rotten flesh. This will remove every food effect. 
+There is also a way to remove all active food effects. Food Overhaul implements a [RemoveFoodStatusEffect]() effect type and also adds a status effect of that type ("foodoverhaul:remove_food_effects_effect"). These are instant effects (like vanillas "Instant Damage" effect) and they remove every food effect.
+
+## Customization
+
+All food effects that were previously part of Food Overhaul were moved to [a separate mod](https://github.com/TheRedBrain/food-overhaul-effects). This gives mod pack authors / players the option to use their own food effects.
+
+Food effects can be added to any item (even modded) by vanilla methods (mainly commands) or by using third party mods.
+
+https://modrinth.com/mod/item-components and https://modrinth.com/mod/default-components both allow setting the default components of items via data packs. 
+
+> A note about hunger and saturation.
+> 
+> Food Overhaul does not remove these systems. They can be used in combination with the food effects.
+
+> If the food system should be completely gone from your mod pack, maybe take a look at my mod [Health Regeneration Overhaul](https://modrinth.com/mod/health-regeneration-overhaul), which can completely disable vanillas hunger system including saturation and exhaustion.

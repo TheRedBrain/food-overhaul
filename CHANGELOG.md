@@ -3,7 +3,6 @@
 - split food effects into standalone mod
 - removed dependency on cloth config
 - added dependency on fzzy config
-- added custom item component
 
 # 2.1.0
 

@@ -8,8 +8,12 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import org.jetbrains.annotations.Nullable;
 
 public class RemoveFoodStatusEffect extends InstantStatusEffect {
+	public RemoveFoodStatusEffect(StatusEffectCategory category, int color) {
+		super(category, color);
+	}
+
 	public RemoveFoodStatusEffect() {
-		super(StatusEffectCategory.HARMFUL, 3381504);
+		this(StatusEffectCategory.HARMFUL, 3381504);
 	}
 
 	@Override

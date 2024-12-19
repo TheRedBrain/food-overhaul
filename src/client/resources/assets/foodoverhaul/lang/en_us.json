@@ -1,6 +1,9 @@
 {
 	"attribute.name.generic.max_food_effects": "Max Food Effects",
 
+	"effect.foodoverhaul.remove_food_effects_effect": "Remove Food Effects",
+	"effect.foodoverhaul.remove_food_effects_effect.description": "Removes All Food Effects",
+
 	"hud.message.foodEatenAlready": "You can't eat more ",
 	"hud.message.maxFoodEaten": "You are full.",
 

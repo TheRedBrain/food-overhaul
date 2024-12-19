@@ -4,7 +4,11 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 
 public class FoodStatusEffect extends StatusEffect {
+	public FoodStatusEffect(StatusEffectCategory category, int color) {
+		super(category, color);
+	}
+
 	public FoodStatusEffect() {
-		super(StatusEffectCategory.BENEFICIAL, 3381504);
+		this(StatusEffectCategory.BENEFICIAL, 3381504);
 	}
 }

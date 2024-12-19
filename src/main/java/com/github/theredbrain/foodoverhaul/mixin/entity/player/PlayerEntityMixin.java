@@ -1,10 +1,8 @@
 package com.github.theredbrain.foodoverhaul.mixin.entity.player;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
-import com.github.theredbrain.foodoverhaul.component.type.OverhauledFoodComponent;
 import com.github.theredbrain.foodoverhaul.effect.FoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
-import com.github.theredbrain.foodoverhaul.registry.ItemComponentRegistry;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
@@ -56,9 +54,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 
 	@Unique
 	public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
-		OverhauledFoodComponent overhauledFoodComponent = itemStack.get(FoodOverhaul.OVERHAULED_FOOD_COMPONENT_TYPE);
-		if (overhauledFoodComponent != null) {
-			for (OverhauledFoodComponent.StatusEffectEntry statusEffectEntry : overhauledFoodComponent.effects()) {
+		FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
+		if (foodComponent != null) {
+			for (FoodComponent.StatusEffectEntry statusEffectEntry : foodComponent.effects()) {
 				if (getWorld().isClient) continue;
 				return foodoverhaul$tryEatOverhauledFood(statusEffectEntry.effect());
 			}

@@ -1,11 +1,9 @@
 package com.github.theredbrain.foodoverhaul;
 
-import com.github.theredbrain.foodoverhaul.component.type.OverhauledFoodComponent;
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
-import com.github.theredbrain.foodoverhaul.registry.ItemComponentRegistry;
+import com.github.theredbrain.foodoverhaul.registry.StatusEffectsRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.component.ComponentType;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
@@ -17,14 +15,13 @@ public class FoodOverhaul implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ServerConfig SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
-	public static ComponentType<OverhauledFoodComponent> OVERHAULED_FOOD_COMPONENT_TYPE;
 	public static RegistryEntry<EntityAttribute> MAX_FOOD_EFFECTS;
 
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Enjoy your overhauled food!");
 
-		ItemComponentRegistry.init();
+		StatusEffectsRegistry.init();
 	}
 
 	public static Identifier identifier(String path) {
