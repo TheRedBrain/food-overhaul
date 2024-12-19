@@ -1,8 +1,10 @@
 package com.github.theredbrain.foodoverhaul.mixin.entity.player;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
+import com.github.theredbrain.foodoverhaul.component.type.OverhauledFoodComponent;
 import com.github.theredbrain.foodoverhaul.effect.FoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.registry.ItemComponentRegistry;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
@@ -49,14 +51,14 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 
 	@Inject(method = "eatFood", at = @At(value = "RETURN"))
 	public void foodoverhaul$eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-		this.getItemCooldownManager().set(stack.getItem(), FoodOverhaul.serverConfig.item_cooldown_after_eating);
+		this.getItemCooldownManager().set(stack.getItem(), FoodOverhaul.SERVER_CONFIG.item_cooldown_after_eating.get());
 	}
 
 	@Unique
 	public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
-		FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
-		if (foodComponent != null) {
-			for (FoodComponent.StatusEffectEntry statusEffectEntry : foodComponent.effects()) {
+		OverhauledFoodComponent overhauledFoodComponent = itemStack.get(FoodOverhaul.OVERHAULED_FOOD_COMPONENT_TYPE);
+		if (overhauledFoodComponent != null) {
+			for (OverhauledFoodComponent.StatusEffectEntry statusEffectEntry : overhauledFoodComponent.effects()) {
 				if (getWorld().isClient) continue;
 				return foodoverhaul$tryEatOverhauledFood(statusEffectEntry.effect());
 			}
@@ -73,7 +75,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 			Collection<StatusEffectInstance> collection = this.getStatusEffects();
 			for (StatusEffectInstance currentEffect : collection) {
 				if (currentEffect.getEffectType() == statusEffectInstance.getEffectType()) {
-					if (currentEffect.isDurationBelow(FoodOverhaul.serverConfig.food_effect_duration_threshold_to_allow_eating)) {
+					if (currentEffect.isDurationBelow(FoodOverhaul.SERVER_CONFIG.food_effect_duration_threshold_to_allow_eating.get())) {
 						return true;
 					} else {
 						this.sendMessage(Text.translatable("hud.message.foodEatenAlready").append(Text.translatable(currentEffect.getTranslationKey())), true);

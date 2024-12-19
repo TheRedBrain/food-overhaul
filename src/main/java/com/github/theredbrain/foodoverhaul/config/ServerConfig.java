@@ -1,24 +1,17 @@
 package com.github.theredbrain.foodoverhaul.config;
 
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
+import com.github.theredbrain.foodoverhaul.FoodOverhaul;
+import me.fzzyhmstrs.fzzy_config.annotations.ConvertFrom;
+import me.fzzyhmstrs.fzzy_config.config.Config;
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt;
 
-@Config(
-		name = "server"
-)
-public class ServerConfig implements ConfigData {
-	@Comment("""
-			When food effects have less than this many ticks of duration left,
-			their corresponding food type can be eaten again
-			""")
-	public int food_effect_duration_threshold_to_allow_eating = 200;
-	@Comment("""
-			Eating a food item applies an item cooldown of this many ticks to that item
-			""")
-	public int item_cooldown_after_eating = 5;
+@ConvertFrom(fileName = "server.json5", folder = "foodoverhaul")
+public class ServerConfig extends Config {
 
 	public ServerConfig() {
-
+		super(FoodOverhaul.identifier("server"));
 	}
+
+	public ValidatedInt food_effect_duration_threshold_to_allow_eating = new ValidatedInt(200);
+	public ValidatedInt item_cooldown_after_eating = new ValidatedInt(5);
 }
