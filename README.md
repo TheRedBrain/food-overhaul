@@ -24,7 +24,7 @@ The limit is controlled by an entity attribute called **_generic.max_food_effect
 The player doesn't have to wait until an effect is completely gone to refresh it.
 When a food effect is running out, it's corresponding food item can be consumed again. The exact threshold after which this is possible is set in the server config.
 
-There is also a way to remove all active food effects. Food Overhaul implements a [RemoveFoodStatusEffect]() effect type and also adds a status effect of that type ("foodoverhaul:remove_food_effects_effect"). These are instant effects (like vanillas "Instant Damage" effect) and they remove every food effect.
+There is also a way to remove all active food effects. Food Overhaul implements a [RemoveFoodStatusEffect](https://github.com/TheRedBrain/food-overhaul/blob/1.21.1/src/main/java/com/github/theredbrain/foodoverhaul/effect/RemoveFoodStatusEffect.java) effect type and also adds a status effect of that type ("foodoverhaul:remove_food_effects_effect"). These are instant effects (like vanillas "Instant Damage" effect) and they remove every food effect.
 
 ## Customization
 
