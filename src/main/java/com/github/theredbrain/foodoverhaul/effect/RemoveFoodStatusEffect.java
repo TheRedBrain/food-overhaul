@@ -1,13 +1,12 @@
 package com.github.theredbrain.foodoverhaul.effect;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.InstantStatusEffect;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.registry.entry.RegistryEntry;
 
-public class RemoveFoodStatusEffect extends InstantStatusEffect {
+public class RemoveFoodStatusEffect extends StatusEffect {
 	public RemoveFoodStatusEffect(StatusEffectCategory category, int color) {
 		super(category, color);
 	}
@@ -17,20 +16,15 @@ public class RemoveFoodStatusEffect extends InstantStatusEffect {
 	}
 
 	@Override
-	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
-		this.removeAllFoodEffects(entity);
-		return true;
+	public void onApplied(LivingEntity entity, int amplifier) {
+		this.removeRemoveFoodEffectsEffect(entity);
 	}
 
-	@Override
-	public void applyInstantEffect(@Nullable Entity source, @Nullable Entity attacker, LivingEntity target, int amplifier, double proximity) {
-		this.removeAllFoodEffects(target);
-	}
-
-	private void removeAllFoodEffects(LivingEntity livingEntity) {
+	private void removeRemoveFoodEffectsEffect(LivingEntity livingEntity) {
 		for (StatusEffectInstance currentEffect : livingEntity.getStatusEffects().stream().toList()) {
-			if (currentEffect.getEffectType() instanceof FoodStatusEffect) {
-				livingEntity.removeStatusEffect(currentEffect.getEffectType());
+			RegistryEntry<StatusEffect> statusEffectRegistryEntry = currentEffect.getEffectType();
+			if (statusEffectRegistryEntry.value() instanceof RemoveFoodStatusEffect || statusEffectRegistryEntry.value() instanceof FoodStatusEffect) {
+				livingEntity.removeStatusEffect(statusEffectRegistryEntry);
 			}
 		}
 	}

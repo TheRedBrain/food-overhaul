@@ -36,8 +36,9 @@
 		"fzzy_config": ">=${fzzy_config_version}"
 	},
 	"suggests": {
-		"foodoverhauleffects": "*",
+		"variousstatuseffects": "*",
 		"default_components": "*",
-		"item_components": "*"
+		"item_components": "*",
+		"foodeffecttooltips": "*"
 	}
 }
