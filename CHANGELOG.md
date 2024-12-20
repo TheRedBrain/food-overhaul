@@ -1,3 +1,8 @@
+# 2.2.1
+
+- fixed RemoveFoodStatusEffect
+- removed "foodoverhaul:remove_food_effects_effect" status effect, a replacement is implemented in Various Status Effects
+
 # 2.2.0
 
 - split food effects into standalone mod

@@ -1,7 +1,6 @@
 package com.github.theredbrain.foodoverhaul;
 
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
-import com.github.theredbrain.foodoverhaul.registry.StatusEffectsRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -20,8 +19,6 @@ public class FoodOverhaul implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Enjoy your overhauled food!");
-
-		StatusEffectsRegistry.init();
 	}
 
 	public static Identifier identifier(String path) {
