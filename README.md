@@ -5,7 +5,7 @@ These effects can grant attribute modifiers like increased health, more stamina 
 
 This gives players a real choice, when they decide what combination of food is the best for a given situation, which in my opinion is much more interesting than eating golden carrots all day.
 
-Food Overhaul adds the back end system for this new food system, but it does not add gameplay content on its own.
+> Food Overhaul adds the back end system for this new food system, but it does not add gameplay content on its own.
 
 This ensures that mod pack authors have the most possible control over how exactly their food items are balanced.
 
@@ -28,7 +28,7 @@ There is also a way to remove all active food effects. Food Overhaul implements 
 
 ## Customization
 
-All food effects that were previously part of Food Overhaul were moved to [Various Status Effects](https://github.com/TheRedBrain/various-status-effects). This gives mod pack authors / players the option to use their own food effects.
+All food effects that were previously part of Food Overhaul were moved to [Food Overhaul - Effects](https://github.com/TheRedBrain/food-overhaul-effects). This gives mod pack authors / players the option to use their own food effects.
 
 Food effects can be added to any item (even modded) by vanilla methods (mainly commands) or by using third party mods.
 
