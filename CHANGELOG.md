@@ -1,3 +1,7 @@
+# 2.2.2
+
+- fixed RemoveFoodStatusEffect, again
+
 # 2.2.1
 
 - fixed RemoveFoodStatusEffect

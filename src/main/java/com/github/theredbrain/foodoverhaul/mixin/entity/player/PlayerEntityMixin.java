@@ -2,6 +2,7 @@ package com.github.theredbrain.foodoverhaul.mixin.entity.player;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.effect.FoodStatusEffect;
+import com.github.theredbrain.foodoverhaul.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
@@ -66,9 +67,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 
 	@Unique
 	public boolean foodoverhaul$tryEatOverhauledFood(StatusEffectInstance statusEffectInstance) {
-		if (this.getStatusEffects().isEmpty()) {
+		if (this.getStatusEffects().isEmpty() || statusEffectInstance.getEffectType().value() instanceof RemoveFoodStatusEffect) {
 			return true;
-		} else {
+		} else if (statusEffectInstance.getEffectType().value() instanceof FoodStatusEffect) {
 			int currentEatenFoods = 0;
 			Collection<StatusEffectInstance> collection = this.getStatusEffects();
 			for (StatusEffectInstance currentEffect : collection) {
@@ -89,6 +90,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 			}
 			return bl;
 		}
+		return true;
 	}
 
 	@Override
