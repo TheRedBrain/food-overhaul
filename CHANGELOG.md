@@ -1,7 +1,8 @@
 # 2.2.1
 
 - fixed RemoveFoodStatusEffect
-- removed "foodoverhaul:remove_food_effects_effect" status effect, a replacement is implemented in Various Status Effects
+- removed "foodoverhaul:remove_food_effects_effect" status effect, a replacement is implemented in Food Overhaul - Vanilla Foods
+- fixed dependencies
 
 # 2.2.0
 

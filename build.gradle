@@ -99,11 +99,7 @@ if (project.hasProperty('release_type')) {
 
             relations {
                 requiredDependency 'fabric-api'
-                requiredDependency 'cloth-config'
-                requiredDependency 'health-regeneration-overhaul'
-                requiredDependency 'mana-attributes'
-                requiredDependency 'overhauled-damage'
-                requiredDependency 'stamina-attributes'
+                requiredDependency 'fzzy-config'
             }
 
             mainArtifact(remapJar)
@@ -133,11 +129,7 @@ if (project.hasProperty('release_type')) {
             // The scope can be `required`, `optional`, `incompatible`, or `embedded`
             // The type can either be `project` or `version`
             required.project 'fabric-api'
-            required.project 'cloth-config'
-            required.project 'health-regeneration-overhaul'
-            required.project 'mana-attributes'
-            required.project 'overhauled-damage'
-            required.project 'stamina-attributes'
+            required.project 'fzzy-config'
         }
     }
 

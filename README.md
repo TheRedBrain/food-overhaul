@@ -1,6 +1,6 @@
 # Food Overhaul
 
-This is an overhaul for the food system. Eating food no longer fills the hunger bar or gives saturation. Each food item now grants a corresponding status effect instead. 
+This is an overhaul of the food system. Eating food no longer fills the hunger bar or gives saturation. Each food item now grants a corresponding status effect instead. 
 These effects can grant attribute modifiers like increased health, more stamina or resistance against frost damage.
 
 This gives players a real choice, when they decide what combination of food is the best for a given situation, which in my opinion is much more interesting than eating golden carrots all day.
@@ -16,7 +16,7 @@ If an item grants such an effect, the food can only be eaten when the player doe
 
 > A status effect is considered a food effect when their effect type extends [FoodStatusEffect](https://github.com/TheRedBrain/food-overhaul/blob/1.21.1/src/main/java/com/github/theredbrain/foodoverhaul/effect/FoodStatusEffect.java).
 
-### What prevents a player from eating every available food?
+## What prevents a player from eating every available food?
 
 Each player can only have a limited amount of food status effects active at a time. It's not possible to eat food when that limit is reached.
 The limit is controlled by an entity attribute called **_generic.max_food_effects_** and is 3 by default.
@@ -28,13 +28,17 @@ There is also a way to remove all active food effects. Food Overhaul implements 
 
 ## Customization
 
-All food effects that were previously part of Food Overhaul were moved to [Food Overhaul - Effects](https://github.com/TheRedBrain/food-overhaul-effects). This gives mod pack authors / players the option to use their own food effects.
-
 Food effects can be added to any item (even modded) by vanilla methods (mainly commands) or by using third party mods.
 
 https://modrinth.com/mod/item-components and https://modrinth.com/mod/default-components both allow setting the default components of items via data packs. 
 
-### Hunger and saturation
+This gives mod pack authors / players the option to use their own food effects.
+
+## Just want to play?
+
+[Food Overhaul - Vanilla Foods](https://github.com/TheRedBrain/food-overhaul-vanilla-foods) adds food effects to vanilla items.
+
+## Hunger and saturation
 
 Food Overhaul does not remove these systems. They can be used in combination with the food effects.
 

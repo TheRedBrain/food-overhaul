@@ -17,10 +17,10 @@ public class RemoveFoodStatusEffect extends StatusEffect {
 
 	@Override
 	public void onApplied(LivingEntity entity, int amplifier) {
-		this.removeRemoveFoodEffectsEffect(entity);
+		this.removeEffects(entity);
 	}
 
-	private void removeRemoveFoodEffectsEffect(LivingEntity livingEntity) {
+	private void removeEffects(LivingEntity livingEntity) {
 		for (StatusEffectInstance currentEffect : livingEntity.getStatusEffects().stream().toList()) {
 			RegistryEntry<StatusEffect> statusEffectRegistryEntry = currentEffect.getEffectType();
 			if (statusEffectRegistryEntry.value() instanceof RemoveFoodStatusEffect || statusEffectRegistryEntry.value() instanceof FoodStatusEffect) {
