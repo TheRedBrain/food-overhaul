@@ -6,7 +6,8 @@
 		"entity.LivingEntityMixin",
 		"entity.attribute.EntityAttributesMixin",
 		"entity.player.PlayerEntityMixin",
-		"item.ItemMixin"
+		"item.ItemMixin",
+		"item.PotionItemMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

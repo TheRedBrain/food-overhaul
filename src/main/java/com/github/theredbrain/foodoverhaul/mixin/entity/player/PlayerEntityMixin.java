@@ -6,6 +6,7 @@ import com.github.theredbrain.foodoverhaul.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -44,7 +45,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 	@Inject(method = "createPlayerAttributes", at = @At("RETURN"))
 	private static void foodoverhaul$createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
 		cir.getReturnValue()
-				.add(FoodOverhaul.MAX_FOOD_EFFECTS, 3)
+				.add(FoodOverhaul.MAX_FOOD_EFFECTS, FoodOverhaul.SERVER_CONFIG.max_concurrent_food_effects.get())
 		;
 	}
 
@@ -56,10 +57,17 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 	@Unique
 	public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
 		FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
+		PotionContentsComponent potionComponent = itemStack.get(DataComponentTypes.POTION_CONTENTS);
 		if (foodComponent != null) {
 			for (FoodComponent.StatusEffectEntry statusEffectEntry : foodComponent.effects()) {
 				if (getWorld().isClient) continue;
 				return foodoverhaul$tryEatOverhauledFood(statusEffectEntry.effect());
+			}
+		}
+		if (potionComponent != null) {
+			for (StatusEffectInstance statusEffectInstance : potionComponent.getEffects()) {
+				if (getWorld().isClient) continue;
+				return foodoverhaul$tryEatOverhauledFood(statusEffectInstance);
 			}
 		}
 		return false;
