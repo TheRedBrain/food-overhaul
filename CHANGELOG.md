@@ -1,3 +1,8 @@
+# 2.3.0
+
+- reworked the checks for existing food effects, they now work with the new status effect tag "foodoverhaul:food_effects". This means that every status effect can become a food effect
+- added a simple API for food blocks (similar to vanillas cake)
+
 # 2.2.2
 
 - fixed RemoveFoodStatusEffect, again

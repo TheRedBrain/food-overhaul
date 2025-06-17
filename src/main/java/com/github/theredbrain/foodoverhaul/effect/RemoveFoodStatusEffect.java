@@ -1,5 +1,6 @@
 package com.github.theredbrain.foodoverhaul.effect;
 
+import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
@@ -23,7 +24,7 @@ public class RemoveFoodStatusEffect extends StatusEffect {
 	private void removeEffects(LivingEntity livingEntity) {
 		for (StatusEffectInstance currentEffect : livingEntity.getStatusEffects().stream().toList()) {
 			RegistryEntry<StatusEffect> statusEffectRegistryEntry = currentEffect.getEffectType();
-			if (statusEffectRegistryEntry.value() instanceof RemoveFoodStatusEffect || statusEffectRegistryEntry.value() instanceof FoodStatusEffect) {
+			if (statusEffectRegistryEntry.value() instanceof RemoveFoodStatusEffect || statusEffectRegistryEntry.isIn(FoodOverhaul.FOOD_EFFECTS)) {
 				livingEntity.removeStatusEffect(statusEffectRegistryEntry);
 			}
 		}

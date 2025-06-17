@@ -3,6 +3,7 @@ package com.github.theredbrain.foodoverhaul.effect;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 
+@Deprecated
 public class FoodStatusEffect extends StatusEffect {
 	public FoodStatusEffect(StatusEffectCategory category, int color) {
 		super(category, color);
