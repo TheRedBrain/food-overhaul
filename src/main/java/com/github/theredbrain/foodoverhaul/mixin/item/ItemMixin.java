@@ -4,6 +4,7 @@ import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -22,16 +23,15 @@ public abstract class ItemMixin {
 	public void foodoverhaul$use(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
 		ItemStack itemStack = user.getStackInHand(hand);
 		FoodComponent foodComponent = itemStack.get(DataComponentTypes.FOOD);
-		if (foodComponent != null) {
-			if (!foodComponent.effects().isEmpty() || !FoodOverhaul.SERVER_CONFIG.allow_eating_food_with_no_food_effect.get()) {
-				if (((DuckPlayerEntityMixin) user).foodoverhaul$canConsumeItem(itemStack)) {
-					user.setCurrentHand(hand);
-					cir.setReturnValue(TypedActionResult.consume(itemStack));
-				} else {
-					cir.setReturnValue(TypedActionResult.fail(itemStack));
-				}
-				cir.cancel();
+		PotionContentsComponent potionContentsComponent = itemStack.get(DataComponentTypes.POTION_CONTENTS);
+		if ((potionContentsComponent != null && potionContentsComponent.hasEffects()) || (foodComponent != null && (!foodComponent.effects().isEmpty() || !FoodOverhaul.SERVER_CONFIG.allow_eating_food_with_no_food_effect.get()))) {
+			if (((DuckPlayerEntityMixin) user).foodoverhaul$canConsumeItem(itemStack)) {
+				user.setCurrentHand(hand);
+				cir.setReturnValue(TypedActionResult.consume(itemStack));
+			} else {
+				cir.setReturnValue(TypedActionResult.fail(itemStack));
 			}
+			cir.cancel();
 		}
 	}
 }
