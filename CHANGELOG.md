@@ -2,6 +2,7 @@
 
 - reworked the checks for existing food effects, they now work with the new status effect tag "foodoverhaul:food_effects". This means that every status effect can become a food effect
 - added a simple API for food blocks (similar to vanillas cake)
+- added support for potions
 - fixed config getting initialized too early
 
 # 2.2.2

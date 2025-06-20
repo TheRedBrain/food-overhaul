@@ -11,10 +11,12 @@ This ensures that mod pack authors have the most possible control over how exact
 
 ## How does it work?
 
-Food items in Minecraft can apply status effects. Food Overhaul uses that functionality and simply checks if one of those status effects is a "food effect".
-If an item grants such an effect, the food can only be eaten when the player does not already have that food effect.
+Items in Minecraft can apply status effects to the player when used. Food Overhaul uses that functionality and simply checks if one of those status effects is a "food effect".
+If an item grants such an effect, the item can only be used when the player does not already have that food effect.
 
-> A status effect is considered a food effect when their effect type extends [FoodStatusEffect](https://github.com/TheRedBrain/food-overhaul/blob/1.21.1/src/main/java/com/github/theredbrain/foodoverhaul/effect/FoodStatusEffect.java).
+> A status effect is considered a food effect when it is in the "foodoverhaul:food_effects" mob_effect tag.
+
+Food Overhaul supports two different item types, food and potions. They are defined by having specific data components, namely "minecraft:food" and "minecraft:potion_contents", respectively.
 
 ## What prevents a player from eating every available food?
 
@@ -33,6 +35,12 @@ Food effects can be added to any item (even modded) by vanilla methods (mainly c
 https://modrinth.com/mod/item-components and https://modrinth.com/mod/default-components both allow setting the default components of items via data packs. 
 
 This gives mod pack authors / players the option to use their own food effects.
+
+## Food blocks
+
+Food blocks can be interacted with to grant a status effect to the player. When that status effect is a food effect, interaction is only possible when the player doesn't already have the effect.
+
+Food Overhaul provides a simple Java API for add-on mods to create food blocks.
 
 ## Just want to play?
 
