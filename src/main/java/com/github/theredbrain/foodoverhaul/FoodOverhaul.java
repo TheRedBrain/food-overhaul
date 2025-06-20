@@ -32,7 +32,7 @@ import java.util.Collection;
 public class FoodOverhaul implements ModInitializer {
 	public static final String MOD_ID = "foodoverhaul";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	public static ServerConfig SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
+	public static ServerConfig SERVER_CONFIG;
 
 	public static RegistryEntry<EntityAttribute> MAX_FOOD_EFFECTS;
 
@@ -74,6 +74,7 @@ public class FoodOverhaul implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Enjoy your overhauled food!");
+		SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
 		BlockRegistry.init();
 		EntityRegistry.init();
