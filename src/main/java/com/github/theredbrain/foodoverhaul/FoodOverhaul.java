@@ -5,6 +5,7 @@ import com.github.theredbrain.foodoverhaul.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.github.theredbrain.foodoverhaul.registry.GameRulesRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -78,6 +79,7 @@ public class FoodOverhaul implements ModInitializer {
 
 		BlockRegistry.init();
 		EntityRegistry.init();
+		GameRulesRegistry.init();
 	}
 
 	public static Identifier identifier(String path) {

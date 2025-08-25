@@ -10,5 +10,7 @@
 	"foodoverhaul.server.food_effect_duration_threshold_to_allow_eating": "Food Effect Duration Threshold",
 	"foodoverhaul.server.food_effect_duration_threshold_to_allow_eating.desc": "When food effects have less than this many ticks of duration left, their corresponding food type can be eaten again",
 	"foodoverhaul.server.item_cooldown_after_eating": "Item Cooldown After Eating",
-	"foodoverhaul.server.item_cooldown_after_eating.desc": "Eating a food item applies an item cooldown of this many ticks to that item"
+	"foodoverhaul.server.item_cooldown_after_eating.desc": "Eating a food item applies an item cooldown of this many ticks to that item",
+
+	"gamerule.naturalMaximumFoodEffects": "Natural maximum amount of food effects"
 }
