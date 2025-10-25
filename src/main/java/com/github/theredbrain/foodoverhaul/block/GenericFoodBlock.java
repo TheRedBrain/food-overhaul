@@ -107,7 +107,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 		if (!usePreventingStatusEffectIdentifier.isEmpty()) {
 			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(usePreventingStatusEffectIdentifier));
 			if (optional_status_effect.isPresent()) {
-				canPlayerInteract = player.hasStatusEffect(optional_status_effect.get());
+				canPlayerInteract = !player.hasStatusEffect(optional_status_effect.get());
 			}
 		}
 		String requiredAdvancementIdentifier = foodBlockEntity.getRequiredAdvancementIdentifier();
