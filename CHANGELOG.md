@@ -1,3 +1,16 @@
+# 3.0.0
+
+- updated to 1.21.10
+
+## Additions
+
+- added "foodoverhaul:remove_effects_in_tag" consume effect, clears all status effects in a given effects tag when item is consumed
+- added "natural_maximum_food_effects" server config option
+
+## Changes
+
+- removed FoodStatusEffect and RemoveFoodStatusEffect classes, all functionality is now implemented using components and tags
+
 # 2.3.0
 
 - reworked the checks for existing food effects, they now work with the new status effect tag "foodoverhaul:food_effects". This means that every status effect can become a food effect
