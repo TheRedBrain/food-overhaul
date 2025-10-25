@@ -3,6 +3,7 @@
 	"package": "com.github.theredbrain.foodoverhaul.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"component.type.ConsumableComponentMixin",
 		"entity.LivingEntityMixin",
 		"entity.attribute.EntityAttributesMixin",
 		"entity.player.PlayerEntityMixin",
