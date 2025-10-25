@@ -62,7 +62,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity) {
-			if (world.isClient) {
+			if (world.isClient()) {
 				if (tryEat(world, pos, state, player, foodBlockEntity).isAccepted()) {
 					return ActionResult.SUCCESS;
 				}
@@ -94,7 +94,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 						));
 					}
 					genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
-					return ActionResult.success(world.isClient());
+					return ActionResult.SUCCESS_SERVER;
 				}
 			}
 		}
