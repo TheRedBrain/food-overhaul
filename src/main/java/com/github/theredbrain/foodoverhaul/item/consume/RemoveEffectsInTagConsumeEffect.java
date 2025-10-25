@@ -1,8 +1,6 @@
 package com.github.theredbrain.foodoverhaul.item.consume;
 
-import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.registry.ConsumeEffectRegistry;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.LivingEntity;

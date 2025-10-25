@@ -7,6 +7,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -31,105 +33,106 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+	protected void writeData(WriteView view) {
 
+		super.writeData(view);
 
 		if (!this.appliedStatusEffectIdentifier.isEmpty()) {
-			nbt.putString("appliedStatusEffectIdentifier", this.appliedStatusEffectIdentifier);
+			view.putString("appliedStatusEffectIdentifier", this.appliedStatusEffectIdentifier);
 		} else {
-			nbt.remove("appliedStatusEffectIdentifier");
+			view.remove("appliedStatusEffectIdentifier");
 		}
 
 		if (this.duration != 0) {
-			nbt.putInt("duration", this.duration);
+			view.putInt("duration", this.duration);
 		} else {
-			nbt.remove("duration");
+			view.remove("duration");
 		}
 
 		if (this.amplifier != 0) {
-			nbt.putInt("amplifier", this.amplifier);
+			view.putInt("amplifier", this.amplifier);
 		} else {
-			nbt.remove("amplifier");
+			view.remove("amplifier");
 		}
 
 		if (this.ambient) {
-			nbt.putBoolean("ambient", true);
+			view.putBoolean("ambient", true);
 		} else {
-			nbt.remove("ambient");
+			view.remove("ambient");
 		}
 
 		if (this.showParticles) {
-			nbt.putBoolean("showParticles", true);
+			view.putBoolean("showParticles", true);
 		} else {
-			nbt.remove("showParticles");
+			view.remove("showParticles");
 		}
 
 		if (this.showIcon) {
-			nbt.putBoolean("showIcon", true);
+			view.putBoolean("showIcon", true);
 		} else {
-			nbt.remove("showIcon");
+			view.remove("showIcon");
 		}
 
 
 		if (!this.usePreventingStatusEffectIdentifier.isEmpty()) {
-			nbt.putString("usePreventingStatusEffectIdentifier", this.usePreventingStatusEffectIdentifier);
+			view.putString("usePreventingStatusEffectIdentifier", this.usePreventingStatusEffectIdentifier);
 		} else {
-			nbt.remove("usePreventingStatusEffectIdentifier");
+			view.remove("usePreventingStatusEffectIdentifier");
 		}
 
 		if (!this.requiredAdvancementIdentifier.isEmpty()) {
-			nbt.putString("requiredAdvancementIdentifier", this.requiredAdvancementIdentifier);
+			view.putString("requiredAdvancementIdentifier", this.requiredAdvancementIdentifier);
 		} else {
-			nbt.remove("requiredAdvancementIdentifier");
+			view.remove("requiredAdvancementIdentifier");
 		}
 
 
 		if (this.recoveryTimer > 0) {
-			nbt.putInt("recoveryTimer", this.recoveryTimer);
+			view.putInt("recoveryTimer", this.recoveryTimer);
 		} else {
-			nbt.remove("recoveryTimer");
+			view.remove("recoveryTimer");
 		}
 
 		if (this.recoveryTimerThreshold > 0) {
-			nbt.putInt("recoveryTimerThreshold", this.recoveryTimerThreshold);
+			view.putInt("recoveryTimerThreshold", this.recoveryTimerThreshold);
 		} else {
-			nbt.remove("recoveryTimerThreshold");
+			view.remove("recoveryTimerThreshold");
 		}
 
 		if (this.infiniteUses) {
-			nbt.putBoolean("infiniteUses", true);
+			view.putBoolean("infiniteUses", true);
 		} else {
-			nbt.remove("infiniteUses");
+			view.remove("infiniteUses");
 		}
 
 	}
 
 	@Override
-	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+	protected void readData(ReadView view) {
 
-		this.appliedStatusEffectIdentifier = nbt.getString("appliedStatusEffectIdentifier");
+		this.appliedStatusEffectIdentifier = view.getString("appliedStatusEffectIdentifier", "");
 
-		this.duration = nbt.getInt("duration");
+		this.duration = view.getInt("duration", 0);
 
-		this.amplifier = nbt.getInt("amplifier");
+		this.amplifier = view.getInt("amplifier", 0);
 
-		this.ambient = nbt.getBoolean("ambient");
+		this.ambient = view.getBoolean("ambient", false);
 
-		this.showParticles = nbt.getBoolean("showParticles");
+		this.showParticles = view.getBoolean("showParticles", false);
 
-		this.showIcon = nbt.getBoolean("showIcon");
-
-
-		this.usePreventingStatusEffectIdentifier = nbt.getString("usePreventingStatusEffectIdentifier");
-
-		this.requiredAdvancementIdentifier = nbt.getString("requiredAdvancementIdentifier");
+		this.showIcon = view.getBoolean("showIcon", true);
 
 
-		this.recoveryTimer = nbt.getInt("recoveryTimer");
+		this.usePreventingStatusEffectIdentifier = view.getString("usePreventingStatusEffectIdentifier", "");
 
-		this.recoveryTimerThreshold = nbt.getInt("recoveryTimerThreshold");
+		this.requiredAdvancementIdentifier = view.getString("requiredAdvancementIdentifier", "");
 
-		this.infiniteUses = nbt.getBoolean("infiniteUses");
+
+		this.recoveryTimer = view.getInt("recoveryTimer", 0);
+
+		this.recoveryTimerThreshold = view.getInt("recoveryTimerThreshold", 0);
+
+		this.infiniteUses = view.getBoolean("infiniteUses", false);
 
 	}
 
@@ -138,12 +141,12 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-		return this.createComponentlessNbt(registryLookup);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
+		return this.createComponentlessNbt(registries);
 	}
 
 	public static void tick(World world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
-		if (!world.isClient && world.getTime() % 20L == 0L && foodBlockEntity.recoveryTimerThreshold > 0) {
+		if (!world.isClient() && world.getTime() % 20L == 0L && foodBlockEntity.recoveryTimerThreshold > 0) {
 			foodBlockEntity.recoveryTimer++;
 			if (foodBlockEntity.recoveryTimer >= foodBlockEntity.recoveryTimerThreshold) {
 				foodBlockEntity.recoveryTimer = 0;

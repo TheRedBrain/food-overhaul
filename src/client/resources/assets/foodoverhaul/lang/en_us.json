@@ -1,16 +1,12 @@
 {
-	"attribute.name.generic.max_food_effects": "Max Food Effects",
+	"attribute.name.max_food_effects": "Max Food Effects",
 
 	"hud.message.foodEatenAlready": "You can't eat more ",
 	"hud.message.maxFoodEaten": "You are full.",
 
 	"foodoverhaul.server": "Server Side Settings",
 
-	"foodoverhaul.server.allow_eating_food_with_no_food_effect": "Allow Eating Food Without Food Effect",
 	"foodoverhaul.server.food_effect_duration_threshold_to_allow_eating": "Food Effect Duration Threshold",
 	"foodoverhaul.server.food_effect_duration_threshold_to_allow_eating.desc": "When food effects have less than this many ticks of duration left, their corresponding food type can be eaten again",
-	"foodoverhaul.server.item_cooldown_after_eating": "Item Cooldown After Eating",
-	"foodoverhaul.server.item_cooldown_after_eating.desc": "Eating a food item applies an item cooldown of this many ticks to that item",
-
-	"gamerule.naturalMaximumFoodEffects": "Natural maximum amount of food effects"
+	"foodoverhaul.server.natural_maximum_food_effects": "Natural Max Food Effects"
 }

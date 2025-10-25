@@ -7,12 +7,10 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ConsumableComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
@@ -20,7 +18,6 @@ import net.minecraft.item.consume.ConsumeEffect;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,12 +25,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlayerEntityMixin {
-
-	@Shadow
-	public abstract ItemStack getEquippedStack(EquipmentSlot slot);
-
-	@Shadow
-	public abstract ItemCooldownManager getItemCooldownManager();
 
 	protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
 		super(entityType, world);
@@ -43,11 +34,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 	public void foodoverhaul$tick(CallbackInfo ci) {
 		this.getAttributes().addTemporaryModifiers(getNaturalAttributeModifiers(this.getEntityWorld()));
 	}
-
-//	@Inject(method = "eatFood", at = @At(value = "RETURN"))
-//	public void foodoverhaul$eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-//		this.getItemCooldownManager().set(stack.getItem(), FoodOverhaul.SERVER_CONFIG.item_cooldown_after_eating.get());
-//	}
 
 	@Override
 	public boolean foodoverhaul$canConsumeItem(ItemStack itemStack) {
