@@ -4,6 +4,7 @@ import com.github.theredbrain.foodoverhaul.block.GenericFoodBlock;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
@@ -14,22 +15,26 @@ import net.minecraft.world.World;
 
 public class FoodBlockEntity extends BlockEntity {
 
-	private String appliedStatusEffectIdentifier = "";
-	private int duration = 0;
-	private int amplifier = 0;
-	private boolean ambient = false;
-	private boolean showParticles = false;
-	private boolean showIcon = true;
+	protected String appliedStatusEffectIdentifier = "";
+	protected int duration = 0;
+	protected int amplifier = 0;
+	protected boolean ambient = false;
+	protected boolean showParticles = false;
+	protected boolean showIcon = true;
 
-	private String usePreventingStatusEffectIdentifier = "";
-	private String requiredAdvancementIdentifier = "";
+	protected String usePreventingStatusEffectIdentifier = "";
+	protected String requiredAdvancementIdentifier = "";
 
-	private int recoveryTimer = 0;
-	private int recoveryTimerThreshold = 0;
-	private boolean infiniteUses = false;
+	protected int recoveryTimer = 0;
+	protected int recoveryTimerThreshold = 0;
+	protected boolean infiniteUses = false;
+
+	public FoodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+		super(type, pos, state);
+	}
 
 	public FoodBlockEntity(BlockPos pos, BlockState state) {
-		super(EntityRegistry.GENERIC_FOOD_BLOCK_ENTITY, pos, state);
+		this(EntityRegistry.GENERIC_FOOD_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override
