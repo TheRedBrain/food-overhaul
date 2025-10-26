@@ -6,8 +6,7 @@
 		"component.type.ConsumableComponentMixin",
 		"entity.LivingEntityMixin",
 		"entity.attribute.EntityAttributesMixin",
-		"entity.player.PlayerEntityMixin",
-		"item.ItemMixin"
+		"entity.player.PlayerEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
