@@ -3,11 +3,15 @@ package com.github.theredbrain.foodoverhaul;
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
 import com.github.theredbrain.foodoverhaul.entity.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.network.packet.UpdateFoodBlockPacket;
+import com.github.theredbrain.foodoverhaul.network.packet.UpdateFoodBlockPacketReceiver;
 import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.effect.StatusEffect;
@@ -78,6 +82,10 @@ public class FoodOverhaul implements ModInitializer {
 
 		BlockRegistry.init();
 		EntityRegistry.init();
+
+		PayloadTypeRegistry.playC2S().register(UpdateFoodBlockPacket.PACKET_ID, UpdateFoodBlockPacket.PACKET_CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(UpdateFoodBlockPacket.PACKET_ID, new UpdateFoodBlockPacketReceiver());
+
 	}
 
 	public static Identifier identifier(String path) {

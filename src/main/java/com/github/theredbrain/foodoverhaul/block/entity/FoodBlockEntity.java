@@ -7,20 +7,25 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class FoodBlockEntity extends BlockEntity {
 
 	protected String appliedStatusEffectIdentifier = "";
-	protected int duration = 0;
-	protected int amplifier = 0;
-	protected boolean ambient = false;
-	protected boolean showParticles = false;
-	protected boolean showIcon = true;
+	protected int appliedStatusEffectDuration = 0;
+	protected int appliedStatusEffectAmplifier = 0;
+	protected boolean appliedStatusEffectAmbient = false;
+	protected boolean appliedStatusEffectShowParticles = false;
+	protected boolean appliedStatusEffectShowIcon = true;
+
+	protected String interactionToolItemIdentifier = "";
+	protected String interactionResultItemIdentifier = "";
 
 	protected String usePreventingStatusEffectIdentifier = "";
 	protected String requiredAdvancementIdentifier = "";
@@ -48,34 +53,47 @@ public class FoodBlockEntity extends BlockEntity {
 			view.remove("appliedStatusEffectIdentifier");
 		}
 
-		if (this.duration != 0) {
-			view.putInt("duration", this.duration);
+		if (this.appliedStatusEffectDuration != 0) {
+			view.putInt("appliedStatusEffectDuration", this.appliedStatusEffectDuration);
 		} else {
-			view.remove("duration");
+			view.remove("appliedStatusEffectDuration");
 		}
 
-		if (this.amplifier != 0) {
-			view.putInt("amplifier", this.amplifier);
+		if (this.appliedStatusEffectAmplifier != 0) {
+			view.putInt("appliedStatusEffectAmplifier", this.appliedStatusEffectAmplifier);
 		} else {
-			view.remove("amplifier");
+			view.remove("appliedStatusEffectAmplifier");
 		}
 
-		if (this.ambient) {
-			view.putBoolean("ambient", true);
+		if (this.appliedStatusEffectAmbient) {
+			view.putBoolean("appliedStatusEffectAmbient", true);
 		} else {
-			view.remove("ambient");
+			view.remove("appliedStatusEffectAmbient");
 		}
 
-		if (this.showParticles) {
-			view.putBoolean("showParticles", true);
+		if (this.appliedStatusEffectShowParticles) {
+			view.putBoolean("appliedStatusEffectShowParticles", true);
 		} else {
-			view.remove("showParticles");
+			view.remove("appliedStatusEffectShowParticles");
 		}
 
-		if (this.showIcon) {
-			view.putBoolean("showIcon", true);
+		if (this.appliedStatusEffectShowIcon) {
+			view.putBoolean("appliedStatusEffectShowIcon", true);
 		} else {
-			view.remove("showIcon");
+			view.remove("appliedStatusEffectShowIcon");
+		}
+
+
+		if (!this.interactionToolItemIdentifier.isEmpty()) {
+			view.putString("interactionToolItemIdentifier", this.interactionToolItemIdentifier);
+		} else {
+			view.remove("interactionToolItemIdentifier");
+		}
+
+		if (!this.interactionResultItemIdentifier.isEmpty()) {
+			view.putString("interactionResultItemIdentifier", this.interactionResultItemIdentifier);
+		} else {
+			view.remove("interactionResultItemIdentifier");
 		}
 
 
@@ -117,15 +135,20 @@ public class FoodBlockEntity extends BlockEntity {
 
 		this.appliedStatusEffectIdentifier = view.getString("appliedStatusEffectIdentifier", "");
 
-		this.duration = view.getInt("duration", 0);
+		this.appliedStatusEffectDuration = view.getInt("appliedStatusEffectDuration", 0);
 
-		this.amplifier = view.getInt("amplifier", 0);
+		this.appliedStatusEffectAmplifier = view.getInt("appliedStatusEffectAmplifier", 0);
 
-		this.ambient = view.getBoolean("ambient", false);
+		this.appliedStatusEffectAmbient = view.getBoolean("appliedStatusEffectAmbient", false);
 
-		this.showParticles = view.getBoolean("showParticles", false);
+		this.appliedStatusEffectShowParticles = view.getBoolean("appliedStatusEffectShowParticles", false);
 
-		this.showIcon = view.getBoolean("showIcon", true);
+		this.appliedStatusEffectShowIcon = view.getBoolean("appliedStatusEffectShowIcon", true);
+
+
+		this.interactionToolItemIdentifier = view.getString("interactionToolItemIdentifier", "");
+
+		this.interactionResultItemIdentifier = view.getString("interactionResultItemIdentifier", "");
 
 
 		this.usePreventingStatusEffectIdentifier = view.getString("usePreventingStatusEffectIdentifier", "");
@@ -161,56 +184,84 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	//region --- getter & setter ---
+
 	public String getAppliedStatusEffectIdentifier() {
 		return this.appliedStatusEffectIdentifier;
 	}
 
-	public void setAppliedStatusEffectIdentifier(String appliedStatusEffectIdentifier) {
-		this.appliedStatusEffectIdentifier = appliedStatusEffectIdentifier;
+	public boolean setAppliedStatusEffectIdentifier(String appliedStatusEffectIdentifier) {
+		if (Registries.STATUS_EFFECT.get(Identifier.tryParse(appliedStatusEffectIdentifier)) != null || appliedStatusEffectIdentifier.equals("")) {
+			this.appliedStatusEffectIdentifier = appliedStatusEffectIdentifier;
+			return true;
+		}
+		return false;
 	}
 
-	public int getDuration() {
-		return duration;
+	public int getAppliedStatusEffectAmplifier() {
+		return this.appliedStatusEffectAmplifier;
 	}
 
-	public void setDuration(int duration) {
-		this.duration = duration;
+	public boolean setAppliedStatusEffectAmplifier(int appliedStatusEffectAmplifier) {
+		if (appliedStatusEffectAmplifier >= 0 && appliedStatusEffectAmplifier < 127) {
+			this.appliedStatusEffectAmplifier = appliedStatusEffectAmplifier;
+			return true;
+		}
+		return false;
 	}
 
-	public int getAmplifier() {
-		return amplifier;
+	public int getAppliedStatusEffectDuration() {
+		return appliedStatusEffectDuration;
 	}
 
-	public void setAmplifier(int amplifier) {
-		this.amplifier = amplifier;
+	public void setAppliedStatusEffectDuration(int appliedStatusEffectDuration) {
+		if (appliedStatusEffectDuration < -1) {
+			appliedStatusEffectDuration = 100;
+		}
+		this.appliedStatusEffectDuration = appliedStatusEffectDuration;
 	}
 
-	public boolean getAmbient() {
-		return ambient;
+	public boolean getAppliedStatusEffectAmbient() {
+		return appliedStatusEffectAmbient;
 	}
 
-	public void setAmbient(boolean ambient) {
-		this.ambient = ambient;
+	public void setAppliedStatusEffectAmbient(boolean appliedStatusEffectAmbient) {
+		this.appliedStatusEffectAmbient = appliedStatusEffectAmbient;
 	}
 
-	public boolean getShowParticles() {
-		return showParticles;
+	public boolean getAppliedStatusEffectShowParticles() {
+		return appliedStatusEffectShowParticles;
 	}
 
-	public void setShowParticles(boolean showParticles) {
-		this.showParticles = showParticles;
+	public void setAppliedStatusEffectShowParticles(boolean appliedStatusEffectShowParticles) {
+		this.appliedStatusEffectShowParticles = appliedStatusEffectShowParticles;
 	}
 
-	public boolean getShowIcon() {
-		return showIcon;
+	public boolean getAppliedStatusEffectShowIcon() {
+		return appliedStatusEffectShowIcon;
 	}
 
-	public void setShowIcon(boolean showIcon) {
-		this.showIcon = showIcon;
+	public void setAppliedStatusEffectShowIcon(boolean appliedStatusEffectShowIcon) {
+		this.appliedStatusEffectShowIcon = appliedStatusEffectShowIcon;
+	}
+
+	public String getInteractionResultItemIdentifier() {
+		return this.interactionResultItemIdentifier;
+	}
+
+	public void setInteractionResultItemIdentifier(String interactionResultItemIdentifier) {
+		this.interactionResultItemIdentifier = interactionResultItemIdentifier;
+	}
+
+	public String getInteractionToolItemIdentifier() {
+		return this.interactionToolItemIdentifier;
+	}
+
+	public void setInteractionToolItemIdentifier(String interactionToolItemIdentifier) {
+		this.interactionToolItemIdentifier = interactionToolItemIdentifier;
 	}
 
 	public String getUsePreventingStatusEffectIdentifier() {
-		return usePreventingStatusEffectIdentifier;
+		return this.usePreventingStatusEffectIdentifier;
 	}
 
 	public void setUsePreventingStatusEffectIdentifier(String usePreventingStatusEffectIdentifier) {
@@ -218,7 +269,7 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	public String getRequiredAdvancementIdentifier() {
-		return requiredAdvancementIdentifier;
+		return this.requiredAdvancementIdentifier;
 	}
 
 	public void setRequiredAdvancementIdentifier(String requiredAdvancementIdentifier) {
@@ -226,15 +277,23 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	public int getRecoveryTimer() {
-		return recoveryTimer;
+		return this.recoveryTimer;
 	}
 
 	public void setRecoveryTimer(int recoveryTimer) {
 		this.recoveryTimer = recoveryTimer;
 	}
 
+	public int getRecoveryTimerThreshold() {
+		return this.recoveryTimerThreshold;
+	}
+
+	public void setRecoveryTimerThreshold(int recoveryTimerThreshold) {
+		this.recoveryTimerThreshold = recoveryTimerThreshold;
+	}
+
 	public boolean getInfiniteUses() {
-		return infiniteUses;
+		return this.infiniteUses;
 	}
 
 	public void setInfiniteUses(boolean infiniteUses) {

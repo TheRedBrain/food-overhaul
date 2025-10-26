@@ -27,7 +27,11 @@
 		]
 	},
 	"mixins": [
-		"foodoverhaul.mixins.json"
+		"foodoverhaul.mixins.json",
+		{
+			"config": "foodoverhaul.client.mixins.json",
+			"environment": "client"
+		}
 	],
 	"depends": {
 		"fabricloader": ">=${loader_version}",

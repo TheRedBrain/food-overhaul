@@ -1,6 +1,7 @@
 package com.github.theredbrain.foodoverhaul.mixin.entity.player;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
+import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.google.common.collect.HashMultimap;
 import net.minecraft.component.DataComponentTypes;
@@ -73,6 +74,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements DuckPlay
 		HashMultimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> hashMultimap = HashMultimap.create();
 		hashMultimap.put(FoodOverhaul.MAX_FOOD_EFFECTS, new EntityAttributeModifier(FoodOverhaul.identifier("natural_maximum_food_effects_modifier"), FoodOverhaul.SERVER_CONFIG.natural_maximum_food_effects.get(), EntityAttributeModifier.Operation.ADD_VALUE));
 		return hashMultimap;
+	}
+
+	@Override
+	public void foodoverhaul$openFoodBlockScreen(FoodBlockEntity foodBlockEntity) {
 	}
 
 }

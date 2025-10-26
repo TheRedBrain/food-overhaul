@@ -2,6 +2,7 @@ package com.github.theredbrain.foodoverhaul.block;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
+import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.advancement.AdvancementEntry;
@@ -14,10 +15,14 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.stat.Stats;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -62,35 +67,120 @@ public class GenericFoodBlock extends BlockWithEntity {
 	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity) {
-			if (world.isClient()) {
-				if (tryEat(world, pos, state, player, foodBlockEntity).isAccepted()) {
-					return ActionResult.SUCCESS;
+			if (FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && player.isCreativeLevelTwoOp() && player.isSneaking()) {
+				((DuckPlayerEntityMixin) player).foodoverhaul$openFoodBlockScreen(foodBlockEntity);
+				return ActionResult.SUCCESS;
+			} else {
+				if (world.isClient()) {
+					if (tryEat(world, pos, state, player, foodBlockEntity).isAccepted()) {
+						return ActionResult.SUCCESS;
+					}
+
+					if (player.getStackInHand(Hand.MAIN_HAND).isEmpty()) {
+						return ActionResult.CONSUME;
+					}
 				}
 
-				if (player.getStackInHand(Hand.MAIN_HAND).isEmpty()) {
-					return ActionResult.CONSUME;
-				}
+				return tryEat(world, pos, state, player, foodBlockEntity);
 			}
-
-			return tryEat(world, pos, state, player, foodBlockEntity);
 		}
 		return super.onUse(state, world, pos, player, hit);
+	}
+
+	@Override
+	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+		BlockEntity blockEntity = world.getBlockEntity(pos);
+		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
+			if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
+
+				Item interactionResultItem = Registries.ITEM.get(Identifier.of(foodBlockEntity.getInteractionResultItemIdentifier()));
+				Item interactionToolItem = Registries.ITEM.get(Identifier.of(foodBlockEntity.getInteractionToolItemIdentifier()));
+
+				if (interactionResultItem != Items.AIR && interactionToolItem != Items.AIR) {
+					if (stack.isOf(interactionToolItem)) {
+						if (stack.getMaxCount() == 1) {
+//							world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F); // TODO custom id
+							stack.damage(1, player, hand.getEquipmentSlot());
+//							world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos); // TODO custom id
+						} else {
+
+							if (!player.isCreative()) {
+								stack.decrement(1);
+							}
+//							world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F); // TODO custom id
+							player.setStackInHand(hand, stack.isEmpty() ? ItemStack.EMPTY : stack);
+//							world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos); // TODO custom id
+						}
+						player.getInventory().offerOrDrop(interactionResultItem.getDefaultStack());
+						if (!world.isClient()) {
+							player.incrementStat(Stats.USED.getOrCreateStat(interactionToolItem));
+						}
+						this.onSuccessfulItemInteraction(world, pos, state, foodBlockEntity, player);
+						return ActionResult.SUCCESS;
+					}
+				}
+			}
+		}
+		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+
+//		int i = (Integer)state.get(HONEY_LEVEL);
+//		boolean bl = false;
+//		if (i >= 5) {
+//			Item item = stack.getItem();
+//			if (world instanceof ServerWorld serverWorld && stack.isOf(Items.SHEARS)) {
+//				dropHoneycomb(serverWorld, stack, state, world.getBlockEntity(pos), player, pos);
+//				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_BEEHIVE_SHEAR, SoundCategory.BLOCKS, 1.0F, 1.0F);
+//				stack.damage(1, player, hand.getEquipmentSlot());
+//				bl = true;
+//				world.emitGameEvent(player, GameEvent.SHEAR, pos);
+//			} else if (stack.isOf(Items.GLASS_BOTTLE)) {
+//				stack.decrement(1);
+//				world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+//				if (stack.isEmpty()) {
+//					player.setStackInHand(hand, new ItemStack(Items.HONEY_BOTTLE));
+//				} else if (!player.getInventory().insertStack(new ItemStack(Items.HONEY_BOTTLE))) {
+//					player.dropItem(new ItemStack(Items.HONEY_BOTTLE), false);
+//				}
+//
+//				bl = true;
+//				world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos);
+//			}
+//
+//			if (!world.isClient() && bl) {
+//				player.incrementStat(Stats.USED.getOrCreateStat(item));
+//			}
+//		}
+//
+//		if (bl) {
+//			if (!CampfireBlock.isLitCampfireInRange(world, pos)) {
+//				if (this.hasBees(world, pos)) {
+//					this.angerNearbyBees(world, pos);
+//				}
+//
+//				this.takeHoney(world, state, pos, player, BeehiveBlockEntity.BeeState.EMERGENCY);
+//			} else {
+//				this.takeHoney(world, state, pos);
+//			}
+//
+//			return ActionResult.SUCCESS;
+//		} else {
+//		}
 	}
 
 	protected static ActionResult tryEat(WorldAccess world, BlockPos pos, BlockState state, PlayerEntity player, FoodBlockEntity foodBlockEntity) {
 		if (state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(foodBlockEntity.getAppliedStatusEffectIdentifier()));
 			if (optional_status_effect.isPresent()) {
-				if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player) && FoodOverhaul.tryEatOverhauledFood(player, optional_status_effect.get())) {
+				if (FoodOverhaul.tryEatOverhauledFood(player, optional_status_effect.get())) {
 					if (!world.isClient()) {
 						foodBlockEntity.setRecoveryTimer(0);
 						player.addStatusEffect(new StatusEffectInstance(
 								optional_status_effect.get(),
-								foodBlockEntity.getDuration(),
-								foodBlockEntity.getAmplifier(),
-								foodBlockEntity.getAmbient(),
-								foodBlockEntity.getShowParticles(),
-								foodBlockEntity.getShowIcon()
+								foodBlockEntity.getAppliedStatusEffectDuration(),
+								foodBlockEntity.getAppliedStatusEffectAmplifier(),
+								foodBlockEntity.getAppliedStatusEffectAmbient(),
+								foodBlockEntity.getAppliedStatusEffectShowParticles(),
+								foodBlockEntity.getAppliedStatusEffectShowIcon()
 						));
 					}
 					genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
@@ -122,6 +212,9 @@ public class GenericFoodBlock extends BlockWithEntity {
 	}
 
 	protected void onSuccessfulInteraction(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
+	}
+
+	protected void onSuccessfulItemInteraction(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
 	}
 
 	public static void recoveryTick(World world, BlockPos pos, BlockState state) {
