@@ -1,4 +1,4 @@
-package com.github.theredbrain.foodoverhaul.mixin.entity.effect;
+package com.github.theredbrain.foodoverhaul.entity.effect;
 
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
