@@ -1,9 +1,9 @@
 package com.github.theredbrain.foodoverhaul;
 
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
+import com.github.theredbrain.foodoverhaul.entity.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
-import com.github.theredbrain.foodoverhaul.registry.ConsumeEffectRegistry;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
@@ -39,7 +39,9 @@ public class FoodOverhaul implements ModInitializer {
 	public static TagKey<StatusEffect> FOOD_EFFECTS = TagKey.of(RegistryKeys.STATUS_EFFECT, identifier("food_effects"));
 
 	public static boolean tryEatOverhauledFood(PlayerEntity playerEntity, RegistryEntry<StatusEffect> statusEffectEntry) {
-		if (statusEffectEntry.isIn(FoodOverhaul.FOOD_EFFECTS)) {
+		if (statusEffectEntry.value() instanceof RemoveFoodStatusEffect) {
+			return true;
+		} else if (statusEffectEntry.isIn(FoodOverhaul.FOOD_EFFECTS)) {
 			int currentEatenFoods = 0;
 			Collection<StatusEffectInstance> collection = playerEntity.getStatusEffects();
 			for (StatusEffectInstance currentEffect : collection) {
@@ -76,7 +78,6 @@ public class FoodOverhaul implements ModInitializer {
 
 		BlockRegistry.init();
 		EntityRegistry.init();
-		ConsumeEffectRegistry.init();
 	}
 
 	public static Identifier identifier(String path) {
