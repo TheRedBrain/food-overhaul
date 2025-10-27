@@ -3,6 +3,7 @@
 
 	"hud.message.foodEatenAlready": "You can't eat more ",
 	"hud.message.maxFoodEaten": "You are full.",
+	"hud.message.food_block.update_successful": "Food Block Updated!",
 
 	"foodoverhaul.server": "Server Side Settings",
 

@@ -91,10 +91,13 @@ public class GenericFoodBlock extends BlockWithEntity {
 	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
+
+			FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
+
 			if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
 
-				Item interactionResultItem = Registries.ITEM.get(Identifier.of(foodBlockEntity.getInteractionResultItemIdentifier()));
-				Item interactionToolItem = Registries.ITEM.get(Identifier.of(foodBlockEntity.getInteractionToolItemIdentifier()));
+				Item interactionResultItem = Registries.ITEM.get(Identifier.of(foodBlockData.interaction_result_item_identifier()));
+				Item interactionToolItem = Registries.ITEM.get(Identifier.of(foodBlockData.interaction_tool_item_identifier()));
 
 				if (interactionResultItem != Items.AIR && interactionToolItem != Items.AIR) {
 					if (stack.isOf(interactionToolItem)) {
@@ -122,65 +125,23 @@ public class GenericFoodBlock extends BlockWithEntity {
 			}
 		}
 		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
-
-//		int i = (Integer)state.get(HONEY_LEVEL);
-//		boolean bl = false;
-//		if (i >= 5) {
-//			Item item = stack.getItem();
-//			if (world instanceof ServerWorld serverWorld && stack.isOf(Items.SHEARS)) {
-//				dropHoneycomb(serverWorld, stack, state, world.getBlockEntity(pos), player, pos);
-//				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_BEEHIVE_SHEAR, SoundCategory.BLOCKS, 1.0F, 1.0F);
-//				stack.damage(1, player, hand.getEquipmentSlot());
-//				bl = true;
-//				world.emitGameEvent(player, GameEvent.SHEAR, pos);
-//			} else if (stack.isOf(Items.GLASS_BOTTLE)) {
-//				stack.decrement(1);
-//				world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-//				if (stack.isEmpty()) {
-//					player.setStackInHand(hand, new ItemStack(Items.HONEY_BOTTLE));
-//				} else if (!player.getInventory().insertStack(new ItemStack(Items.HONEY_BOTTLE))) {
-//					player.dropItem(new ItemStack(Items.HONEY_BOTTLE), false);
-//				}
-//
-//				bl = true;
-//				world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos);
-//			}
-//
-//			if (!world.isClient() && bl) {
-//				player.incrementStat(Stats.USED.getOrCreateStat(item));
-//			}
-//		}
-//
-//		if (bl) {
-//			if (!CampfireBlock.isLitCampfireInRange(world, pos)) {
-//				if (this.hasBees(world, pos)) {
-//					this.angerNearbyBees(world, pos);
-//				}
-//
-//				this.takeHoney(world, state, pos, player, BeehiveBlockEntity.BeeState.EMERGENCY);
-//			} else {
-//				this.takeHoney(world, state, pos);
-//			}
-//
-//			return ActionResult.SUCCESS;
-//		} else {
-//		}
 	}
 
 	protected static ActionResult tryEat(WorldAccess world, BlockPos pos, BlockState state, PlayerEntity player, FoodBlockEntity foodBlockEntity) {
 		if (state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
-			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(foodBlockEntity.getAppliedStatusEffectIdentifier()));
+			FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
+			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(foodBlockData.applied_status_effect_identifier()));
 			if (optional_status_effect.isPresent()) {
 				if (FoodOverhaul.tryEatOverhauledFood(player, optional_status_effect.get())) {
 					if (!world.isClient()) {
 						foodBlockEntity.setRecoveryTimer(0);
 						player.addStatusEffect(new StatusEffectInstance(
 								optional_status_effect.get(),
-								foodBlockEntity.getAppliedStatusEffectDuration(),
-								foodBlockEntity.getAppliedStatusEffectAmplifier(),
-								foodBlockEntity.getAppliedStatusEffectAmbient(),
-								foodBlockEntity.getAppliedStatusEffectShowParticles(),
-								foodBlockEntity.getAppliedStatusEffectShowIcon()
+								foodBlockData.applied_status_effect_duration(),
+								foodBlockData.applied_status_effect_amplifier(),
+								foodBlockData.applied_status_effect_ambient(),
+								foodBlockData.applied_status_effect_show_particles(),
+								foodBlockData.applied_status_effect_show_icon()
 						));
 					}
 					genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
@@ -193,14 +154,15 @@ public class GenericFoodBlock extends BlockWithEntity {
 
 	protected boolean canPlayerInteract(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
 		boolean canPlayerInteract = true;
-		String usePreventingStatusEffectIdentifier = foodBlockEntity.getUsePreventingStatusEffectIdentifier();
+		FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
+		String usePreventingStatusEffectIdentifier = foodBlockData.use_preventing_status_effect_identifier();
 		if (!usePreventingStatusEffectIdentifier.isEmpty()) {
 			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(usePreventingStatusEffectIdentifier));
 			if (optional_status_effect.isPresent()) {
 				canPlayerInteract = !player.hasStatusEffect(optional_status_effect.get());
 			}
 		}
-		String requiredAdvancementIdentifier = foodBlockEntity.getRequiredAdvancementIdentifier();
+		String requiredAdvancementIdentifier = foodBlockData.required_advancement_identifier();
 		if (canPlayerInteract && !requiredAdvancementIdentifier.isEmpty() && world.getServer() != null && player instanceof ServerPlayerEntity serverPlayerEntity) {
 			ServerAdvancementLoader advancementLoader = world.getServer().getAdvancementLoader();
 			AdvancementEntry advancementEntry = advancementLoader.get(Identifier.of(usePreventingStatusEffectIdentifier));

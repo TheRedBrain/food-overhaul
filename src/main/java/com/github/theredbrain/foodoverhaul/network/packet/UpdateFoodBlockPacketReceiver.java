@@ -22,52 +22,16 @@ public class UpdateFoodBlockPacketReceiver implements ServerPlayNetworking.PlayP
 
 		BlockPos foodBlockPosition = payload.foodBlockPosition();
 
-		String appliedStatusEffectIdentifier = payload.appliedStatusEffectIdentifier();
-		int appliedStatusEffectAmplifier = payload.appliedStatusEffectAmplifier();
-		int appliedStatusEffectDuration = payload.appliedStatusEffectDuration();
-		boolean appliedStatusEffectAmbient = payload.appliedStatusEffectAmbient();
-		boolean appliedStatusEffectShowParticles = payload.appliedStatusEffectShowParticles();
-		boolean appliedStatusEffectShowIcon = payload.appliedStatusEffectShowIcon();
-
-		String interactionResultItemIdentifier = payload.interactionResultItemIdentifier();
-		String interactionToolItemIdentifier = payload.interactionToolItemIdentifier();
-		String usePreventingStatusEffectIdentifier = payload.usePreventingStatusEffectIdentifier();
-		String requiredAdvancementIdentifier = payload.requiredAdvancementIdentifier();
-		int recoveryTimerThreshold = payload.recoveryTimerThreshold();
-		boolean infiniteUses = payload.infiniteUses();
+		FoodBlockEntity.FoodBlockData foodBlockData = payload.foodBlockData();
 
 		World world = serverPlayerEntity.getEntityWorld();
-
-		boolean updateSuccessful = true;
 
 		BlockEntity blockEntity = world.getBlockEntity(foodBlockPosition);
 		BlockState blockState = world.getBlockState(foodBlockPosition);
 
 		if (blockEntity instanceof FoodBlockEntity triggeredBeaconBlockEntity) {
-			if (!triggeredBeaconBlockEntity.setAppliedStatusEffectIdentifier(appliedStatusEffectIdentifier)) {
-				serverPlayerEntity.sendMessage(Text.translatable("food_block.appliedStatusEffectIdentifier.invalid"), false);
-				updateSuccessful = false;
-			}
-			if (!triggeredBeaconBlockEntity.setAppliedStatusEffectAmplifier(appliedStatusEffectAmplifier)) {
-				serverPlayerEntity.sendMessage(Text.translatable("food_block.appliedStatusEffectAmplifier.invalid"), false);
-				updateSuccessful = false;
-			}
-			triggeredBeaconBlockEntity.setAppliedStatusEffectDuration(appliedStatusEffectDuration);
-			triggeredBeaconBlockEntity.setAppliedStatusEffectAmbient(appliedStatusEffectAmbient);
-			triggeredBeaconBlockEntity.setAppliedStatusEffectShowParticles(appliedStatusEffectShowParticles);
-			triggeredBeaconBlockEntity.setAppliedStatusEffectShowIcon(appliedStatusEffectShowIcon);
-
-
-			triggeredBeaconBlockEntity.setInteractionResultItemIdentifier(interactionResultItemIdentifier);
-			triggeredBeaconBlockEntity.setInteractionToolItemIdentifier(interactionToolItemIdentifier);
-			triggeredBeaconBlockEntity.setUsePreventingStatusEffectIdentifier(usePreventingStatusEffectIdentifier);
-			triggeredBeaconBlockEntity.setRequiredAdvancementIdentifier(requiredAdvancementIdentifier);
-			triggeredBeaconBlockEntity.setRecoveryTimerThreshold(recoveryTimerThreshold);
-			triggeredBeaconBlockEntity.setInfiniteUses(infiniteUses);
-
-			if (updateSuccessful) {
-				serverPlayerEntity.sendMessage(Text.translatable("hud.message.food_block.update_successful"), true);
-			}
+			triggeredBeaconBlockEntity.setFoodBlockData(foodBlockData);
+			serverPlayerEntity.sendMessage(Text.translatable("hud.message.food_block.update_successful"), true);
 			triggeredBeaconBlockEntity.markDirty();
 			world.updateListeners(foodBlockPosition, blockState, blockState, Block.NOTIFY_ALL);
 		}

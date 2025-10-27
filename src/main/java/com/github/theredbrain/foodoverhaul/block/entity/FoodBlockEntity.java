@@ -2,37 +2,26 @@ package com.github.theredbrain.foodoverhaul.block.entity;
 
 import com.github.theredbrain.foodoverhaul.block.GenericFoodBlock;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class FoodBlockEntity extends BlockEntity {
 
-	private String appliedStatusEffectIdentifier = "";
-	private int appliedStatusEffectDuration = 0;
-	private int appliedStatusEffectAmplifier = 0;
-	private boolean appliedStatusEffectAmbient = false;
-	private boolean appliedStatusEffectShowParticles = false;
-	private boolean appliedStatusEffectShowIcon = true;
-
-	private String interactionToolItemIdentifier = "";
-	private String interactionResultItemIdentifier = "";
-
-	private String usePreventingStatusEffectIdentifier = "";
-	private String requiredAdvancementIdentifier = "";
-
 	private int recoveryTimer = 0;
-	private int recoveryTimerThreshold = 0;
-	private boolean infiniteUses = false;
+
+	private FoodBlockData foodBlockData = FoodBlockData.DEFAULT;
 
 	public FoodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -47,68 +36,7 @@ public class FoodBlockEntity extends BlockEntity {
 
 		super.writeData(view);
 
-		if (!this.appliedStatusEffectIdentifier.isEmpty()) {
-			view.putString("appliedStatusEffectIdentifier", this.appliedStatusEffectIdentifier);
-		} else {
-			view.remove("appliedStatusEffectIdentifier");
-		}
-
-		if (this.appliedStatusEffectDuration != 0) {
-			view.putInt("appliedStatusEffectDuration", this.appliedStatusEffectDuration);
-		} else {
-			view.remove("appliedStatusEffectDuration");
-		}
-
-		if (this.appliedStatusEffectAmplifier != 0) {
-			view.putInt("appliedStatusEffectAmplifier", this.appliedStatusEffectAmplifier);
-		} else {
-			view.remove("appliedStatusEffectAmplifier");
-		}
-
-		if (this.appliedStatusEffectAmbient) {
-			view.putBoolean("appliedStatusEffectAmbient", true);
-		} else {
-			view.remove("appliedStatusEffectAmbient");
-		}
-
-		if (this.appliedStatusEffectShowParticles) {
-			view.putBoolean("appliedStatusEffectShowParticles", true);
-		} else {
-			view.remove("appliedStatusEffectShowParticles");
-		}
-
-		if (this.appliedStatusEffectShowIcon) {
-			view.putBoolean("appliedStatusEffectShowIcon", true);
-		} else {
-			view.remove("appliedStatusEffectShowIcon");
-		}
-
-
-		if (!this.interactionToolItemIdentifier.isEmpty()) {
-			view.putString("interactionToolItemIdentifier", this.interactionToolItemIdentifier);
-		} else {
-			view.remove("interactionToolItemIdentifier");
-		}
-
-		if (!this.interactionResultItemIdentifier.isEmpty()) {
-			view.putString("interactionResultItemIdentifier", this.interactionResultItemIdentifier);
-		} else {
-			view.remove("interactionResultItemIdentifier");
-		}
-
-
-		if (!this.usePreventingStatusEffectIdentifier.isEmpty()) {
-			view.putString("usePreventingStatusEffectIdentifier", this.usePreventingStatusEffectIdentifier);
-		} else {
-			view.remove("usePreventingStatusEffectIdentifier");
-		}
-
-		if (!this.requiredAdvancementIdentifier.isEmpty()) {
-			view.putString("requiredAdvancementIdentifier", this.requiredAdvancementIdentifier);
-		} else {
-			view.remove("requiredAdvancementIdentifier");
-		}
-
+		view.put("foodBlockData", FoodBlockData.CODEC, this.foodBlockData);
 
 		if (this.recoveryTimer > 0) {
 			view.putInt("recoveryTimer", this.recoveryTimer);
@@ -116,51 +44,16 @@ public class FoodBlockEntity extends BlockEntity {
 			view.remove("recoveryTimer");
 		}
 
-		if (this.recoveryTimerThreshold > 0) {
-			view.putInt("recoveryTimerThreshold", this.recoveryTimerThreshold);
-		} else {
-			view.remove("recoveryTimerThreshold");
-		}
-
-		if (this.infiniteUses) {
-			view.putBoolean("infiniteUses", true);
-		} else {
-			view.remove("infiniteUses");
-		}
-
 	}
 
 	@Override
 	protected void readData(ReadView view) {
 
-		this.appliedStatusEffectIdentifier = view.getString("appliedStatusEffectIdentifier", "");
+		super.readData(view);
 
-		this.appliedStatusEffectDuration = view.getInt("appliedStatusEffectDuration", 0);
-
-		this.appliedStatusEffectAmplifier = view.getInt("appliedStatusEffectAmplifier", 0);
-
-		this.appliedStatusEffectAmbient = view.getBoolean("appliedStatusEffectAmbient", false);
-
-		this.appliedStatusEffectShowParticles = view.getBoolean("appliedStatusEffectShowParticles", false);
-
-		this.appliedStatusEffectShowIcon = view.getBoolean("appliedStatusEffectShowIcon", true);
-
-
-		this.interactionToolItemIdentifier = view.getString("interactionToolItemIdentifier", "");
-
-		this.interactionResultItemIdentifier = view.getString("interactionResultItemIdentifier", "");
-
-
-		this.usePreventingStatusEffectIdentifier = view.getString("usePreventingStatusEffectIdentifier", "");
-
-		this.requiredAdvancementIdentifier = view.getString("requiredAdvancementIdentifier", "");
-
+		this.foodBlockData = view.read("foodBlockData", FoodBlockData.CODEC).orElse(FoodBlockData.DEFAULT);
 
 		this.recoveryTimer = view.getInt("recoveryTimer", 0);
-
-		this.recoveryTimerThreshold = view.getInt("recoveryTimerThreshold", 0);
-
-		this.infiniteUses = view.getBoolean("infiniteUses", false);
 
 	}
 
@@ -174,106 +67,21 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	public static void tick(World world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
-		if (!world.isClient() && world.getTime() % 20L == 0L && foodBlockEntity.recoveryTimerThreshold > 0) {
+		if (!world.isClient() && world.getTime() % 20L == 0L && foodBlockEntity.foodBlockData.recovery_timer_threshold() > 0) {
 			foodBlockEntity.recoveryTimer++;
-			if (foodBlockEntity.recoveryTimer >= foodBlockEntity.recoveryTimerThreshold) {
+			if (foodBlockEntity.recoveryTimer >= foodBlockEntity.foodBlockData.recovery_timer_threshold()) {
 				foodBlockEntity.recoveryTimer = 0;
 				GenericFoodBlock.recoveryTick(world, pos, state);
 			}
 		}
 	}
 
-	//region --- getter & setter ---
-
-	public String getAppliedStatusEffectIdentifier() {
-		return this.appliedStatusEffectIdentifier;
+	public FoodBlockData getFoodBlockData() {
+		return this.foodBlockData;
 	}
 
-	public boolean setAppliedStatusEffectIdentifier(String appliedStatusEffectIdentifier) {
-		if (Registries.STATUS_EFFECT.get(Identifier.tryParse(appliedStatusEffectIdentifier)) != null || appliedStatusEffectIdentifier.equals("")) {
-			this.appliedStatusEffectIdentifier = appliedStatusEffectIdentifier;
-			return true;
-		}
-		return false;
-	}
-
-	public int getAppliedStatusEffectAmplifier() {
-		return this.appliedStatusEffectAmplifier;
-	}
-
-	public boolean setAppliedStatusEffectAmplifier(int appliedStatusEffectAmplifier) {
-		if (appliedStatusEffectAmplifier >= 0 && appliedStatusEffectAmplifier < 127) {
-			this.appliedStatusEffectAmplifier = appliedStatusEffectAmplifier;
-			return true;
-		}
-		return false;
-	}
-
-	public int getAppliedStatusEffectDuration() {
-		return appliedStatusEffectDuration;
-	}
-
-	public void setAppliedStatusEffectDuration(int appliedStatusEffectDuration) {
-		if (appliedStatusEffectDuration < -1) {
-			appliedStatusEffectDuration = 100;
-		}
-		this.appliedStatusEffectDuration = appliedStatusEffectDuration;
-	}
-
-	public boolean getAppliedStatusEffectAmbient() {
-		return appliedStatusEffectAmbient;
-	}
-
-	public void setAppliedStatusEffectAmbient(boolean appliedStatusEffectAmbient) {
-		this.appliedStatusEffectAmbient = appliedStatusEffectAmbient;
-	}
-
-	public boolean getAppliedStatusEffectShowParticles() {
-		return appliedStatusEffectShowParticles;
-	}
-
-	public void setAppliedStatusEffectShowParticles(boolean appliedStatusEffectShowParticles) {
-		this.appliedStatusEffectShowParticles = appliedStatusEffectShowParticles;
-	}
-
-	public boolean getAppliedStatusEffectShowIcon() {
-		return appliedStatusEffectShowIcon;
-	}
-
-	public void setAppliedStatusEffectShowIcon(boolean appliedStatusEffectShowIcon) {
-		this.appliedStatusEffectShowIcon = appliedStatusEffectShowIcon;
-	}
-
-	public String getInteractionResultItemIdentifier() {
-		return this.interactionResultItemIdentifier;
-	}
-
-	public void setInteractionResultItemIdentifier(String interactionResultItemIdentifier) {
-		this.interactionResultItemIdentifier = interactionResultItemIdentifier;
-	}
-
-	public String getInteractionToolItemIdentifier() {
-		return this.interactionToolItemIdentifier;
-	}
-
-	public void setInteractionToolItemIdentifier(String interactionToolItemIdentifier) {
-		this.interactionToolItemIdentifier = interactionToolItemIdentifier;
-	}
-
-	public String getUsePreventingStatusEffectIdentifier() {
-		return this.usePreventingStatusEffectIdentifier;
-	}
-
-	public void setUsePreventingStatusEffectIdentifier(String usePreventingStatusEffectIdentifier) {
-		this.usePreventingStatusEffectIdentifier = usePreventingStatusEffectIdentifier;
-	}
-
-	public String getRequiredAdvancementIdentifier() {
-		return this.requiredAdvancementIdentifier;
-	}
-
-	public void setRequiredAdvancementIdentifier(String requiredAdvancementIdentifier) {
-		this.requiredAdvancementIdentifier = requiredAdvancementIdentifier;
+	public void setFoodBlockData(FoodBlockData foodBlockData) {
+		this.foodBlockData = foodBlockData;
 	}
 
 	public int getRecoveryTimer() {
@@ -284,20 +92,87 @@ public class FoodBlockEntity extends BlockEntity {
 		this.recoveryTimer = recoveryTimer;
 	}
 
-	public int getRecoveryTimerThreshold() {
-		return this.recoveryTimerThreshold;
+	public record FoodBlockData(
+			String applied_status_effect_identifier,
+			int applied_status_effect_duration,
+			int applied_status_effect_amplifier,
+			boolean applied_status_effect_ambient,
+			boolean applied_status_effect_show_particles,
+			boolean applied_status_effect_show_icon,
+			String interaction_tool_item_identifier,
+			String interaction_result_item_identifier,
+			String use_preventing_status_effect_identifier,
+			String required_advancement_identifier,
+			int recovery_timer_threshold,
+			boolean infinite_uses
+	) {
+
+		public static final FoodBlockData DEFAULT = new FoodBlockData(
+				"",
+				0,
+				0,
+				false,
+				false,
+				true,
+				"",
+				"",
+				"",
+				"",
+				0,
+				false
+		);
+
+		public static final Codec<FoodBlockData> CODEC = RecordCodecBuilder.create(
+				instance -> instance.group(
+								Codec.STRING.fieldOf("applied_status_effect_identifier").forGetter(FoodBlockData::applied_status_effect_identifier),
+								Codec.INT.fieldOf("applied_status_effect_duration").forGetter(FoodBlockData::applied_status_effect_duration),
+								Codec.INT.fieldOf("applied_status_effect_amplifier").forGetter(FoodBlockData::applied_status_effect_amplifier),
+								Codec.BOOL.fieldOf("applied_status_effect_ambient").forGetter(FoodBlockData::applied_status_effect_ambient),
+								Codec.BOOL.fieldOf("applied_status_effect_show_particles").forGetter(FoodBlockData::applied_status_effect_show_particles),
+								Codec.BOOL.fieldOf("applied_status_effect_show_icon").forGetter(FoodBlockData::applied_status_effect_show_icon),
+								Codec.STRING.fieldOf("interaction_tool_item_identifier").forGetter(FoodBlockData::interaction_tool_item_identifier),
+								Codec.STRING.fieldOf("interaction_result_item_identifier").forGetter(FoodBlockData::interaction_result_item_identifier),
+								Codec.STRING.fieldOf("use_preventing_status_effect_identifier").forGetter(FoodBlockData::use_preventing_status_effect_identifier),
+								Codec.STRING.fieldOf("required_advancement_identifier").forGetter(FoodBlockData::required_advancement_identifier),
+								Codec.INT.fieldOf("recovery_timer_threshold").forGetter(FoodBlockData::recovery_timer_threshold),
+								Codec.BOOL.fieldOf("infinite_uses").forGetter(FoodBlockData::infinite_uses)
+						)
+						.apply(instance, FoodBlockData::new)
+		);
+
+		public static final PacketCodec<RegistryByteBuf, FoodBlockData> PACKET_CODEC = PacketCodec.of(FoodBlockData::write, FoodBlockData::new);
+
+		public FoodBlockData(RegistryByteBuf registryByteBuf) {
+			this(
+					registryByteBuf.readString(),
+					registryByteBuf.readInt(),
+					registryByteBuf.readInt(),
+					registryByteBuf.readBoolean(),
+					registryByteBuf.readBoolean(),
+					registryByteBuf.readBoolean(),
+					registryByteBuf.readString(),
+					registryByteBuf.readString(),
+					registryByteBuf.readString(),
+					registryByteBuf.readString(),
+					registryByteBuf.readInt(),
+					registryByteBuf.readBoolean()
+			);
+		}
+
+		public void write(RegistryByteBuf registryByteBuf) {
+			registryByteBuf.writeString(this.applied_status_effect_identifier);
+			registryByteBuf.writeInt(this.applied_status_effect_duration);
+			registryByteBuf.writeInt(this.applied_status_effect_amplifier);
+			registryByteBuf.writeBoolean(this.applied_status_effect_ambient);
+			registryByteBuf.writeBoolean(this.applied_status_effect_show_particles);
+			registryByteBuf.writeBoolean(this.applied_status_effect_show_icon);
+			registryByteBuf.writeString(this.interaction_tool_item_identifier);
+			registryByteBuf.writeString(this.interaction_result_item_identifier);
+			registryByteBuf.writeString(this.use_preventing_status_effect_identifier);
+			registryByteBuf.writeString(this.required_advancement_identifier);
+			registryByteBuf.writeInt(this.recovery_timer_threshold);
+			registryByteBuf.writeBoolean(this.infinite_uses);
+		}
 	}
 
-	public void setRecoveryTimerThreshold(int recoveryTimerThreshold) {
-		this.recoveryTimerThreshold = recoveryTimerThreshold;
-	}
-
-	public boolean getInfiniteUses() {
-		return this.infiniteUses;
-	}
-
-	public void setInfiniteUses(boolean infiniteUses) {
-		this.infiniteUses = infiniteUses;
-	}
-	//endregion --- getter & setter ---
 }

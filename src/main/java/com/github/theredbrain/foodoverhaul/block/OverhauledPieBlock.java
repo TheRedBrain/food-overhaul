@@ -6,12 +6,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -29,7 +26,6 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.ScheduledTickView;
-import org.jetbrains.annotations.Nullable;
 
 public class OverhauledPieBlock extends GenericFoodBlock {
 	public static final MapCodec<OverhauledPieBlock> CODEC = createCodec(OverhauledPieBlock::new);
@@ -60,22 +56,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext context) {
-		return (BlockState)this.getDefaultState().with(FACING, context.getHorizontalPlayerFacing());
-	}
-
-	@Override
-	public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-		if (!world.isClient()) {
-			BlockEntity blockEntity = world.getBlockEntity(pos);
-			if (blockEntity instanceof FoodBlockEntity foodBlockEntity) {
-				foodBlockEntity.setAppliedStatusEffectIdentifier("foodoverhaulvanillafoods:cake_food_effect");
-				foodBlockEntity.setAppliedStatusEffectDuration(12000);
-				foodBlockEntity.setInteractionResultItemIdentifier("farmersdelight:cake_slice");
-				foodBlockEntity.setInteractionToolItemIdentifier("#farmersdelight:tools/knives");
-				foodBlockEntity.markDirty();
-				world.updateListeners(pos, state, state, Block.NOTIFY_ALL);
-			}
-		}
+		return (BlockState) this.getDefaultState().with(FACING, context.getHorizontalPlayerFacing());
 	}
 
 	@Override
@@ -86,7 +67,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 		player.incrementStat(Stats.EAT_CAKE_SLICE);
 		int i = state.get(BITES);
 		world.emitGameEvent(player, GameEvent.EAT, pos);
-		if (!foodBlockEntity.getInfiniteUses()) {
+		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
 			if (i < 6) {
 				world.setBlockState(pos, state.with(BITES, i + 1), Block.NOTIFY_ALL);
 			} else {
@@ -104,7 +85,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 		int i = state.get(BITES);
 		world.playSound(player, pos, SoundEvents.BLOCK_WOOL_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
 		world.emitGameEvent(player, GameEvent.EAT, pos);
-		if (!foodBlockEntity.getInfiniteUses()) {
+		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
 			if (i < this.getMaxBites() - 1) {
 				world.setBlockState(pos, state.with(BITES, i + 1), Block.NOTIFY_ALL);
 			} else {
@@ -139,7 +120,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 	@Override
 	protected int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
-		return this.getMaxBites() - (Integer)state.get(BITES);
+		return this.getMaxBites() - (Integer) state.get(BITES);
 	}
 
 	@Override

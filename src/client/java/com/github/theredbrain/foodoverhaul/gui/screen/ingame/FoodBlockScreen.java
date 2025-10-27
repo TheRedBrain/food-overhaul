@@ -23,8 +23,8 @@ import java.util.Optional;
 @Environment(value = EnvType.CLIENT)
 public class FoodBlockScreen extends Screen {
 	private static final Text STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_identifier_label");
-	private static final Text STATUS_EFFECT_AMPLIFIER_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_amplifier_label");
 	private static final Text STATUS_EFFECT_DURATION_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_duration_label");
+	private static final Text STATUS_EFFECT_AMPLIFIER_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_amplifier_label");
 	private static final Text AMBIENT_TRUE_LABEL_TEXT = Text.translatable("gui.food_block.ambient_true_label");
 	private static final Text AMBIENT_FALSE_LABEL_TEXT = Text.translatable("gui.food_block.ambient_false_label");
 	private static final Text HIDE_PARTICLES_LABEL_TEXT = Text.translatable("gui.food_block.hide_particles_label");
@@ -40,11 +40,12 @@ public class FoodBlockScreen extends Screen {
 	private static final Text INFINITE_USE_TRUE_LABEL_TEXT = Text.translatable("gui.food_block.infinite_use_true_label");
 	private static final Text INFINITE_USE_FALSE_LABEL_TEXT = Text.translatable("gui.food_block.infinite_use_false_label");
 	private final FoodBlockEntity foodBlockEntity;
+	private final FoodBlockEntity.FoodBlockData foodBlockData;
 	private ScreenPage screenPage;
 
 	private TextFieldWidget appliedStatusEffectIdentifierField;
-	private TextFieldWidget appliedStatusEffectAmplifierField;
 	private TextFieldWidget appliedStatusEffectDurationField;
+	private TextFieldWidget appliedStatusEffectAmplifierField;
 	private CyclingButtonWidget<Boolean> toggleAppliedStatusEffectAmbientButton;
 	private CyclingButtonWidget<Boolean> toggleAppliedStatusEffectShowParticlesButton;
 	private CyclingButtonWidget<Boolean> toggleAppliedStatusEffectShowIconButton;
@@ -63,6 +64,7 @@ public class FoodBlockScreen extends Screen {
 	public FoodBlockScreen(FoodBlockEntity foodBlockEntity) {
 		super(NarratorManager.EMPTY);
 		this.foodBlockEntity = foodBlockEntity;
+		this.foodBlockData = this.foodBlockEntity.getFoodBlockData();
 		this.screenPage = ScreenPage.APPLIED_EFFECT;
 	}
 
@@ -86,28 +88,28 @@ public class FoodBlockScreen extends Screen {
 
 		this.appliedStatusEffectIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 65, 300, 20, Text.empty());
 		this.appliedStatusEffectIdentifierField.setMaxLength(128);
-		this.appliedStatusEffectIdentifierField.setText(this.foodBlockEntity.getAppliedStatusEffectIdentifier());
+		this.appliedStatusEffectIdentifierField.setText(this.foodBlockData.applied_status_effect_identifier());
 		this.addSelectableChild(this.appliedStatusEffectIdentifierField);
 
-		this.appliedStatusEffectAmplifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 100, 75, 20, Text.empty());
-		this.appliedStatusEffectAmplifierField.setText(Integer.toString(this.foodBlockEntity.getAppliedStatusEffectAmplifier()));
-		this.addSelectableChild(this.appliedStatusEffectAmplifierField);
-
-		this.appliedStatusEffectDurationField = new TextFieldWidget(this.textRenderer, this.width / 2 - 75, 100, 75, 20, Text.empty());
-		this.appliedStatusEffectDurationField.setText(Integer.toString(this.foodBlockEntity.getAppliedStatusEffectDuration()));
+		this.appliedStatusEffectDurationField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 100, 75, 20, Text.empty());
+		this.appliedStatusEffectDurationField.setText(Integer.toString(this.foodBlockData.applied_status_effect_duration()));
 		this.addSelectableChild(this.appliedStatusEffectDurationField);
 
-		this.appliedStatusEffectAmbient = this.foodBlockEntity.getAppliedStatusEffectAmbient();
+		this.appliedStatusEffectAmplifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 75, 100, 75, 20, Text.empty());
+		this.appliedStatusEffectAmplifierField.setText(Integer.toString(this.foodBlockData.applied_status_effect_amplifier()));
+		this.addSelectableChild(this.appliedStatusEffectAmplifierField);
+
+		this.appliedStatusEffectAmbient = this.foodBlockData.applied_status_effect_ambient();
 		this.toggleAppliedStatusEffectAmbientButton = this.addDrawableChild(CyclingButtonWidget.onOffBuilder(AMBIENT_TRUE_LABEL_TEXT, AMBIENT_FALSE_LABEL_TEXT).initially(this.appliedStatusEffectAmbient).omitKeyText().build(this.width / 2 + 4, 100, 150, 20, Text.empty(), (button, appliedStatusEffectAmbient) -> {
 			this.appliedStatusEffectAmbient = appliedStatusEffectAmbient;
 		}));
 
-		this.appliedStatusEffectShowParticles = this.foodBlockEntity.getAppliedStatusEffectShowParticles();
+		this.appliedStatusEffectShowParticles = this.foodBlockData.applied_status_effect_show_particles();
 		this.toggleAppliedStatusEffectShowParticlesButton = this.addDrawableChild(CyclingButtonWidget.onOffBuilder(SHOW_PARTICLES_LABEL_TEXT, HIDE_PARTICLES_LABEL_TEXT).initially(this.appliedStatusEffectShowParticles).omitKeyText().build(this.width / 2 - 154, 124, 150, 20, Text.empty(), (button, appliedStatusEffectShowParticles) -> {
 			this.appliedStatusEffectShowParticles = appliedStatusEffectShowParticles;
 		}));
 
-		this.appliedStatusEffectShowIcon = this.foodBlockEntity.getAppliedStatusEffectShowIcon();
+		this.appliedStatusEffectShowIcon = this.foodBlockData.applied_status_effect_show_icon();
 		this.toggleAppliedStatusEffectShowIconButton = this.addDrawableChild(CyclingButtonWidget.onOffBuilder(SHOW_ICON_LABEL_TEXT, HIDE_ICON_LABEL_TEXT).initially(this.appliedStatusEffectShowIcon).omitKeyText().build(this.width / 2 + 4, 124, 150, 20, Text.empty(), (button, appliedStatusEffectShowIcon) -> {
 			this.appliedStatusEffectShowIcon = appliedStatusEffectShowIcon;
 		}));
@@ -115,30 +117,30 @@ public class FoodBlockScreen extends Screen {
 
 		this.interactionResultItemIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 65, 300, 20, Text.empty());
 		this.interactionResultItemIdentifierField.setMaxLength(128);
-		this.interactionResultItemIdentifierField.setText(this.foodBlockEntity.getInteractionResultItemIdentifier());
+		this.interactionResultItemIdentifierField.setText(this.foodBlockData.interaction_result_item_identifier());
 		this.addSelectableChild(this.interactionResultItemIdentifierField);
 
 		this.interactionToolItemIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 100, 300, 20, Text.empty());
 		this.interactionToolItemIdentifierField.setMaxLength(128);
-		this.interactionToolItemIdentifierField.setText(this.foodBlockEntity.getInteractionToolItemIdentifier());
+		this.interactionToolItemIdentifierField.setText(this.foodBlockData.interaction_tool_item_identifier());
 		this.addSelectableChild(this.interactionToolItemIdentifierField);
 
 		this.usePreventingStatusEffectIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 135, 300, 20, Text.empty());
 		this.usePreventingStatusEffectIdentifierField.setMaxLength(128);
-		this.usePreventingStatusEffectIdentifierField.setText(this.foodBlockEntity.getUsePreventingStatusEffectIdentifier());
+		this.usePreventingStatusEffectIdentifierField.setText(this.foodBlockData.use_preventing_status_effect_identifier());
 		this.addSelectableChild(this.usePreventingStatusEffectIdentifierField);
 
 		this.requiredAdvancementIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 170, 300, 20, Text.empty());
 		this.requiredAdvancementIdentifierField.setMaxLength(128);
-		this.requiredAdvancementIdentifierField.setText(this.foodBlockEntity.getRequiredAdvancementIdentifier());
+		this.requiredAdvancementIdentifierField.setText(this.foodBlockData.required_advancement_identifier());
 		this.addSelectableChild(this.requiredAdvancementIdentifierField);
 
 		this.recoveryTimerThresholdField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 205, 150, 20, Text.empty());
 		this.recoveryTimerThresholdField.setMaxLength(128);
-		this.recoveryTimerThresholdField.setText(Integer.toString(this.foodBlockEntity.getRecoveryTimerThreshold()));
+		this.recoveryTimerThresholdField.setText(Integer.toString(this.foodBlockData.recovery_timer_threshold()));
 		this.addSelectableChild(this.recoveryTimerThresholdField);
 
-		this.infiniteUses = this.foodBlockEntity.getInfiniteUses();
+		this.infiniteUses = this.foodBlockData.infinite_uses();
 		this.toggleInfiniteUsesButton = this.addDrawableChild(CyclingButtonWidget.onOffBuilder(INFINITE_USE_TRUE_LABEL_TEXT, INFINITE_USE_FALSE_LABEL_TEXT).initially(this.infiniteUses).omitKeyText().build(this.width / 2 + 4, 205, 150, 20, Text.empty(), (button, infiniteUses) -> {
 			this.infiniteUses = infiniteUses;
 		}));
@@ -151,8 +153,8 @@ public class FoodBlockScreen extends Screen {
 	private void updateWidgets() {
 
 		this.appliedStatusEffectIdentifierField.setVisible(false);
-		this.appliedStatusEffectAmplifierField.setVisible(false);
 		this.appliedStatusEffectDurationField.setVisible(false);
+		this.appliedStatusEffectAmplifierField.setVisible(false);
 		this.toggleAppliedStatusEffectAmbientButton.visible = false;
 		this.toggleAppliedStatusEffectShowParticlesButton.visible = false;
 		this.toggleAppliedStatusEffectShowIconButton.visible = false;
@@ -167,8 +169,8 @@ public class FoodBlockScreen extends Screen {
 		if (this.screenPage == ScreenPage.APPLIED_EFFECT) {
 
 			this.appliedStatusEffectIdentifierField.setVisible(true);
-			this.appliedStatusEffectAmplifierField.setVisible(true);
 			this.appliedStatusEffectDurationField.setVisible(true);
+			this.appliedStatusEffectAmplifierField.setVisible(true);
 
 			this.toggleAppliedStatusEffectAmbientButton.visible = true;
 			this.toggleAppliedStatusEffectShowParticlesButton.visible = true;
@@ -194,8 +196,8 @@ public class FoodBlockScreen extends Screen {
 		boolean bool2 = this.appliedStatusEffectShowIcon;
 		boolean bool3 = this.infiniteUses;
 		String string6 = this.appliedStatusEffectIdentifierField.getText();
-		String string7 = this.appliedStatusEffectAmplifierField.getText();
-		String string8 = this.appliedStatusEffectDurationField.getText();
+		String string7 = this.appliedStatusEffectDurationField.getText();
+		String string8 = this.appliedStatusEffectAmplifierField.getText();
 		this.init(client, width, height);
 		this.screenPage = var;
 		this.appliedStatusEffectAmbient = bool;
@@ -203,8 +205,8 @@ public class FoodBlockScreen extends Screen {
 		this.appliedStatusEffectShowIcon = bool2;
 		this.infiniteUses = bool3;
 		this.appliedStatusEffectIdentifierField.setText(string6);
-		this.appliedStatusEffectAmplifierField.setText(string7);
-		this.appliedStatusEffectDurationField.setText(string8);
+		this.appliedStatusEffectDurationField.setText(string7);
+		this.appliedStatusEffectAmplifierField.setText(string8);
 	}
 
 	@Override
@@ -215,10 +217,10 @@ public class FoodBlockScreen extends Screen {
 		if (this.screenPage == ScreenPage.APPLIED_EFFECT) {
 			context.drawTextWithShadow(this.textRenderer, STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 55, Colors.LIGHT_GRAY);
 			this.appliedStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
-			context.drawTextWithShadow(this.textRenderer, STATUS_EFFECT_AMPLIFIER_LABEL_TEXT, this.width / 2 - 153, 90, Colors.LIGHT_GRAY);
-			this.appliedStatusEffectAmplifierField.render(context, mouseX, mouseY, delta);
-			context.drawTextWithShadow(this.textRenderer, STATUS_EFFECT_DURATION_LABEL_TEXT, this.width / 2 - 74, 90, Colors.LIGHT_GRAY);
+			context.drawTextWithShadow(this.textRenderer, STATUS_EFFECT_DURATION_LABEL_TEXT, this.width / 2 - 153, 90, Colors.LIGHT_GRAY);
 			this.appliedStatusEffectDurationField.render(context, mouseX, mouseY, delta);
+			context.drawTextWithShadow(this.textRenderer, STATUS_EFFECT_AMPLIFIER_LABEL_TEXT, this.width / 2 - 74, 90, Colors.LIGHT_GRAY);
+			this.appliedStatusEffectAmplifierField.render(context, mouseX, mouseY, delta);
 		} else if (this.screenPage == ScreenPage.TRIGGER_SETTINGS) {
 			context.drawTextWithShadow(this.textRenderer, INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 55, Colors.LIGHT_GRAY);
 			this.interactionResultItemIdentifierField.render(context, mouseX, mouseY, delta);
@@ -242,18 +244,20 @@ public class FoodBlockScreen extends Screen {
 	private boolean updateFoodBlock() {
 		ClientPlayNetworking.send(new UpdateFoodBlockPacket(
 				this.foodBlockEntity.getPos(),
-				this.appliedStatusEffectIdentifierField.getText(),
-				parseInt(this.appliedStatusEffectAmplifierField.getText()),
-				parseInt(this.appliedStatusEffectDurationField.getText()),
-				appliedStatusEffectAmbient,
-				appliedStatusEffectShowParticles,
-				appliedStatusEffectShowIcon,
-				this.interactionResultItemIdentifierField.getText(),
-				this.interactionToolItemIdentifierField.getText(),
-				this.usePreventingStatusEffectIdentifierField.getText(),
-				this.requiredAdvancementIdentifierField.getText(),
-				parseInt(this.recoveryTimerThresholdField.getText()),
-				infiniteUses
+				new FoodBlockEntity.FoodBlockData(
+						this.appliedStatusEffectIdentifierField.getText(),
+						parseInt(this.appliedStatusEffectDurationField.getText()),
+						parseInt(this.appliedStatusEffectAmplifierField.getText()),
+						appliedStatusEffectAmbient,
+						appliedStatusEffectShowParticles,
+						appliedStatusEffectShowIcon,
+						this.interactionResultItemIdentifierField.getText(),
+						this.interactionToolItemIdentifierField.getText(),
+						this.usePreventingStatusEffectIdentifierField.getText(),
+						this.requiredAdvancementIdentifierField.getText(),
+						parseInt(this.recoveryTimerThresholdField.getText()),
+						infiniteUses
+				)
 		));
 		return true;
 	}
