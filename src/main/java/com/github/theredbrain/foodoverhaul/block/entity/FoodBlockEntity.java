@@ -115,8 +115,8 @@ public class FoodBlockEntity extends BlockEntity {
 			boolean applied_status_effect_ambient,
 			boolean applied_status_effect_show_particles,
 			boolean applied_status_effect_show_icon,
-			String interaction_tool_item_identifier,
 			String interaction_result_item_identifier,
+			String interaction_tool_item_identifier,
 			String use_preventing_status_effect_identifier,
 			String required_advancement_identifier,
 			int recovery_timer_threshold,
@@ -146,8 +146,8 @@ public class FoodBlockEntity extends BlockEntity {
 								Codec.BOOL.fieldOf("applied_status_effect_ambient").forGetter(FoodBlockData::applied_status_effect_ambient),
 								Codec.BOOL.fieldOf("applied_status_effect_show_particles").forGetter(FoodBlockData::applied_status_effect_show_particles),
 								Codec.BOOL.fieldOf("applied_status_effect_show_icon").forGetter(FoodBlockData::applied_status_effect_show_icon),
-								Codec.STRING.fieldOf("interaction_tool_item_identifier").forGetter(FoodBlockData::interaction_tool_item_identifier),
 								Codec.STRING.fieldOf("interaction_result_item_identifier").forGetter(FoodBlockData::interaction_result_item_identifier),
+								Codec.STRING.fieldOf("interaction_tool_item_identifier").forGetter(FoodBlockData::interaction_tool_item_identifier),
 								Codec.STRING.fieldOf("use_preventing_status_effect_identifier").forGetter(FoodBlockData::use_preventing_status_effect_identifier),
 								Codec.STRING.fieldOf("required_advancement_identifier").forGetter(FoodBlockData::required_advancement_identifier),
 								Codec.INT.fieldOf("recovery_timer_threshold").forGetter(FoodBlockData::recovery_timer_threshold),
@@ -182,8 +182,8 @@ public class FoodBlockEntity extends BlockEntity {
 			registryByteBuf.writeBoolean(this.applied_status_effect_ambient);
 			registryByteBuf.writeBoolean(this.applied_status_effect_show_particles);
 			registryByteBuf.writeBoolean(this.applied_status_effect_show_icon);
-			registryByteBuf.writeString(this.interaction_tool_item_identifier);
 			registryByteBuf.writeString(this.interaction_result_item_identifier);
+			registryByteBuf.writeString(this.interaction_tool_item_identifier);
 			registryByteBuf.writeString(this.use_preventing_status_effect_identifier);
 			registryByteBuf.writeString(this.required_advancement_identifier);
 			registryByteBuf.writeInt(this.recovery_timer_threshold);
