@@ -19,7 +19,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
@@ -97,10 +99,19 @@ public class GenericFoodBlock extends BlockWithEntity {
 			if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
 
 				Item interactionResultItem = Registries.ITEM.get(Identifier.of(foodBlockData.interaction_result_item_identifier()));
-				Item interactionToolItem = Registries.ITEM.get(Identifier.of(foodBlockData.interaction_tool_item_identifier()));
 
-				if (interactionResultItem != Items.AIR && interactionToolItem != Items.AIR) {
-					if (stack.isOf(interactionToolItem)) {
+				if (interactionResultItem != Items.AIR) {
+					Item interactionToolItem = Items.AIR;
+					TagKey<Item> tag = null;
+					String interaction_tool_item_identifier = foodBlockData.interaction_tool_item_identifier();
+					if (interaction_tool_item_identifier.startsWith("#")) {
+						String tagIdentifier = interaction_tool_item_identifier.replaceFirst("#", "");
+						tag = TagKey.of(RegistryKeys.ITEM, Identifier.of(tagIdentifier));
+					} else {
+						interactionToolItem = Registries.ITEM.get(Identifier.of(interaction_tool_item_identifier));
+					}
+
+					if ((interactionToolItem != Items.AIR && stack.isOf(interactionToolItem)) || (tag != null && stack.isIn(tag))) {
 						if (stack.getMaxCount() == 1) {
 //							world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F); // TODO custom id
 							stack.damage(1, player, hand.getEquipmentSlot());
