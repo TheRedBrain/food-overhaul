@@ -8,12 +8,13 @@ import net.minecraft.registry.Registry;
 
 public class DataComponentRegistry {
 
-	public static final ComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA = Registry.register(
-			Registries.DATA_COMPONENT_TYPE,
-			FoodOverhaul.identifier("food_block_data"),
-			ComponentType.<FoodBlockDataComponent>builder().codec(FoodBlockDataComponent.CODEC).packetCodec(FoodBlockDataComponent.PACKET_CODEC).cache().build()
-	);
-
 	public static void init() {
+
+		FoodOverhaul.FOOD_BLOCK_DATA = Registry.register(
+				Registries.DATA_COMPONENT_TYPE,
+				FoodOverhaul.identifier("food_block_data"),
+				ComponentType.<FoodBlockDataComponent>builder().codec(FoodBlockDataComponent.CODEC).packetCodec(FoodBlockDataComponent.PACKET_CODEC).cache().build()
+		);
+
 	}
 }
