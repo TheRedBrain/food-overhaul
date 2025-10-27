@@ -195,18 +195,28 @@ public class FoodBlockScreen extends Screen {
 		boolean bool1 = this.appliedStatusEffectShowParticles;
 		boolean bool2 = this.appliedStatusEffectShowIcon;
 		boolean bool3 = this.infiniteUses;
-		String string6 = this.appliedStatusEffectIdentifierField.getText();
-		String string7 = this.appliedStatusEffectDurationField.getText();
-		String string8 = this.appliedStatusEffectAmplifierField.getText();
+		String string = this.appliedStatusEffectIdentifierField.getText();
+		String string1 = this.appliedStatusEffectDurationField.getText();
+		String string2 = this.appliedStatusEffectAmplifierField.getText();
+		String string3 = this.interactionResultItemIdentifierField.getText();
+		String string4 = this.interactionToolItemIdentifierField.getText();
+		String string5 = this.usePreventingStatusEffectIdentifierField.getText();
+		String string6 = this.requiredAdvancementIdentifierField.getText();
+		String string7 = this.recoveryTimerThresholdField.getText();
 		this.init(client, width, height);
 		this.screenPage = var;
 		this.appliedStatusEffectAmbient = bool;
 		this.appliedStatusEffectShowParticles = bool1;
 		this.appliedStatusEffectShowIcon = bool2;
 		this.infiniteUses = bool3;
-		this.appliedStatusEffectIdentifierField.setText(string6);
-		this.appliedStatusEffectDurationField.setText(string7);
-		this.appliedStatusEffectAmplifierField.setText(string8);
+		this.appliedStatusEffectIdentifierField.setText(string);
+		this.appliedStatusEffectDurationField.setText(string1);
+		this.appliedStatusEffectAmplifierField.setText(string2);
+		this.interactionResultItemIdentifierField.setText(string3);
+		this.interactionToolItemIdentifierField.setText(string4);
+		this.usePreventingStatusEffectIdentifierField.setText(string5);
+		this.requiredAdvancementIdentifierField.setText(string6);
+		this.recoveryTimerThresholdField.setText(string7);
 	}
 
 	@Override
