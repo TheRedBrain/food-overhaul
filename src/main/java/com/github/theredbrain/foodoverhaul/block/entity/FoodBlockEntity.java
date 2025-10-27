@@ -17,22 +17,22 @@ import net.minecraft.world.World;
 
 public class FoodBlockEntity extends BlockEntity {
 
-	protected String appliedStatusEffectIdentifier = "";
-	protected int appliedStatusEffectDuration = 0;
-	protected int appliedStatusEffectAmplifier = 0;
-	protected boolean appliedStatusEffectAmbient = false;
-	protected boolean appliedStatusEffectShowParticles = false;
-	protected boolean appliedStatusEffectShowIcon = true;
+	private String appliedStatusEffectIdentifier = "";
+	private int appliedStatusEffectDuration = 0;
+	private int appliedStatusEffectAmplifier = 0;
+	private boolean appliedStatusEffectAmbient = false;
+	private boolean appliedStatusEffectShowParticles = false;
+	private boolean appliedStatusEffectShowIcon = true;
 
-	protected String interactionToolItemIdentifier = "";
-	protected String interactionResultItemIdentifier = "";
+	private String interactionToolItemIdentifier = "";
+	private String interactionResultItemIdentifier = "";
 
-	protected String usePreventingStatusEffectIdentifier = "";
-	protected String requiredAdvancementIdentifier = "";
+	private String usePreventingStatusEffectIdentifier = "";
+	private String requiredAdvancementIdentifier = "";
 
-	protected int recoveryTimer = 0;
-	protected int recoveryTimerThreshold = 0;
-	protected boolean infiniteUses = false;
+	private int recoveryTimer = 0;
+	private int recoveryTimerThreshold = 0;
+	private boolean infiniteUses = false;
 
 	public FoodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
