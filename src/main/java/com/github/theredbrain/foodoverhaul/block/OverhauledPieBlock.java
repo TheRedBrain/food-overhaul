@@ -30,7 +30,6 @@ import net.minecraft.world.tick.ScheduledTickView;
 public class OverhauledPieBlock extends GenericFoodBlock {
 	public static final MapCodec<OverhauledPieBlock> CODEC = createCodec(OverhauledPieBlock::new);
 
-	public static final Property<Direction> FACING;
 	public static final IntProperty BITES;
 	protected static final VoxelShape SHAPE;
 
@@ -41,12 +40,13 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 	public OverhauledPieBlock(Settings settings) {
 		super(settings);
-		this.setDefaultState((BlockState) ((BlockState) this.stateManager.getDefaultState()).with(BITES, 0));
+		this.setDefaultState(this.stateManager.getDefaultState().with(BITES, 0));
 	}
 
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		builder.add(FACING, BITES);
+		super.appendProperties(builder);
+		builder.add(BITES);
 	}
 
 	@Override
@@ -55,20 +55,15 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 	}
 
 	@Override
-	public BlockState getPlacementState(ItemPlacementContext context) {
-		return (BlockState) this.getDefaultState().with(FACING, context.getHorizontalPlayerFacing());
-	}
-
-	@Override
 	protected void onSuccessfulInteraction(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
 
 		super.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
 
-		player.incrementStat(Stats.EAT_CAKE_SLICE);
+//		player.incrementStat(Stats.EAT_CAKE_SLICE);
 		int i = state.get(BITES);
 		world.emitGameEvent(player, GameEvent.EAT, pos);
 		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
-			if (i < 6) {
+			if (i < getMaxBites() - 1) {
 				world.setBlockState(pos, state.with(BITES, i + 1), Block.NOTIFY_ALL);
 			} else {
 				world.removeBlock(pos, false);
@@ -81,7 +76,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 		super.onSuccessfulItemInteraction(world, pos, state, foodBlockEntity, player);
 
-		player.incrementStat(Stats.EAT_CAKE_SLICE);
+//		player.incrementStat(Stats.EAT_CAKE_SLICE);
 		int i = state.get(BITES);
 		world.playSound(player, pos, SoundEvents.BLOCK_WOOL_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
 		world.emitGameEvent(player, GameEvent.EAT, pos);
@@ -104,16 +99,6 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 		}
 	}
 
-	@Override
-	protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-		return direction == Direction.DOWN && !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
-	}
-
-	@Override
-	protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		return world.getBlockState(pos.down()).isSolid();
-	}
-
 	public int getMaxBites() {
 		return 4;
 	}
@@ -123,18 +108,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 		return this.getMaxBites() - (Integer) state.get(BITES);
 	}
 
-	@Override
-	protected boolean hasComparatorOutput(BlockState state) {
-		return true;
-	}
-
-	@Override
-	protected boolean canPathfindThrough(BlockState state, NavigationType type) {
-		return false;
-	}
-
 	static {
-		FACING = Properties.HORIZONTAL_FACING;
 		BITES = IntProperty.of("bites", 0, 3);
 		SHAPE = Block.createCuboidShape(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
 	}
