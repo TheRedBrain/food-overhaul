@@ -32,7 +32,7 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	public FoodBlockEntity(BlockPos pos, BlockState state) {
-		this(EntityRegistry.GENERIC_FOOD_BLOCK_ENTITY, pos, state);
+		this(EntityRegistry.FOOD_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override
