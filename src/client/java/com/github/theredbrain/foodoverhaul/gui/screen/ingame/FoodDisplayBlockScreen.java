@@ -1,28 +1,26 @@
 package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
-//
-//import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
-//import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
-//import com.github.theredbrain.foodoverhaul.network.packet.UpdateFoodBlockPacket;
-//import net.fabricmc.api.EnvType;
-//import net.fabricmc.api.Environment;
-//import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-//import net.minecraft.client.MinecraftClient;
-//import net.minecraft.client.gui.DrawContext;
-//import net.minecraft.client.gui.screen.Screen;
-//import net.minecraft.client.gui.widget.ButtonWidget;
-//import net.minecraft.client.gui.widget.CyclingButtonWidget;
-//import net.minecraft.client.gui.widget.TextFieldWidget;
-//import net.minecraft.client.util.NarratorManager;
-//import net.minecraft.screen.ScreenTexts;
-//import net.minecraft.text.Text;
-//import net.minecraft.util.Colors;
-//import net.minecraft.util.StringIdentifiable;
-//
-//import java.util.Arrays;
-//import java.util.Optional;
-//
-//@Environment(value = EnvType.CLIENT) // TODO implement FoodDisplayBlockScreen if necessary
-//public class FoodDisplayBlockScreen extends Screen {
+
+import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
+import com.github.theredbrain.foodoverhaul.network.packet.UpdateFoodDisplayBlockPacket;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.util.NarratorManager;
+import net.minecraft.screen.ScreenTexts;
+import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
+import net.minecraft.util.StringIdentifiable;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+@Environment(value = EnvType.CLIENT)
+public class FoodDisplayBlockScreen extends Screen {
 //	private static final Text STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_identifier_label");
 //	private static final Text STATUS_EFFECT_DURATION_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_duration_label");
 //	private static final Text STATUS_EFFECT_AMPLIFIER_LABEL_TEXT = Text.translatable("gui.food_block.status_effect_amplifier_label");
@@ -32,18 +30,20 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //	private static final Text SHOW_PARTICLES_LABEL_TEXT = Text.translatable("gui.food_block.show_particles_label");
 //	private static final Text HIDE_ICON_LABEL_TEXT = Text.translatable("gui.food_block.hide_icon_label");
 //	private static final Text SHOW_ICON_LABEL_TEXT = Text.translatable("gui.food_block.show_icon_label");
-//
-//	private static final Text INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.interaction_result_item_identifier_label");
+
+	//	private static final Text INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.interaction_result_item_identifier_label");
 //	private static final Text INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.interaction_tool_item_identifier_label");
-//	private static final Text USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.use_preventing_status_effect_identifier_label");
-//	private static final Text REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.required_advancement_identifier_label");
+	private static final Text USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_display_block.use_preventing_status_effect_identifier_label");
+	private static final Text ENABLES_MODIFICATION_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_display_block.enables_modification_status_effect_identifier_label");
+	//	private static final Text REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.required_advancement_identifier_label");
 //	private static final Text RECOVERY_TIMER_THRESHOLD_LABEL_TEXT = Text.translatable("gui.food_block.recovery_timer_threshold_label");
-//	private static final Text INFINITE_USE_TRUE_LABEL_TEXT = Text.translatable("gui.food_block.infinite_use_true_label");
-//	private static final Text INFINITE_USE_FALSE_LABEL_TEXT = Text.translatable("gui.food_block.infinite_use_false_label");
-//	private final FoodDisplayBlockEntity foodDisplayBlockEntity;
-//	private final FoodDisplayBlockEntity.FoodDisplayBlockData foodDisplayBlockData;
+	private static final Text INFINITE_USE_TRUE_LABEL_TEXT = Text.translatable("gui.food_display_block.infinite_use_true_label");
+	private static final Text INFINITE_USE_FALSE_LABEL_TEXT = Text.translatable("gui.food_display_block.infinite_use_false_label");
+	private static final Text INFINITE_USES_LABEL_TEXT = Text.translatable("gui.food_display_block.infinite_uses_label");
+	private final FoodDisplayBlockEntity foodDisplayBlockEntity;
+	private final FoodDisplayBlockEntity.FoodDisplayBlockData foodDisplayBlockData;
 //	private ScreenPage screenPage;
-//
+
 //	private TextFieldWidget appliedStatusEffectIdentifierField;
 //	private TextFieldWidget appliedStatusEffectDurationField;
 //	private TextFieldWidget appliedStatusEffectAmplifierField;
@@ -53,34 +53,46 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //	private boolean appliedStatusEffectAmbient;
 //	private boolean appliedStatusEffectShowParticles;
 //	private boolean appliedStatusEffectShowIcon;
-//
-//	private TextFieldWidget interactionResultItemIdentifierField;
+
+	//	private TextFieldWidget interactionResultItemIdentifierField;
 //	private TextFieldWidget interactionToolItemIdentifierField;
-//	private TextFieldWidget usePreventingStatusEffectIdentifierField;
-//	private TextFieldWidget requiredAdvancementIdentifierField;
+	private TextFieldWidget usePreventingStatusEffectIdentifierField;
+	private TextFieldWidget enablesModificationStatusEffectIdentifierField;
+	//	private TextFieldWidget requiredAdvancementIdentifierField;
 //	private TextFieldWidget recoveryTimerThresholdField;
-//	private boolean infiniteUses;
-//	private CyclingButtonWidget<Boolean> toggleInfiniteUsesButton;
-//
-//	public FoodDisplayBlockScreen(FoodDisplayBlockEntity foodDisplayBlockEntity) {
-//		super(NarratorManager.EMPTY);
-//		this.foodDisplayBlockEntity = foodDisplayBlockEntity;
-//		this.foodDisplayBlockData = this.foodDisplayBlockEntity.getFoodDisplayBlockData();
+	private boolean infiniteUses;
+	private ButtonWidget setInfiniteUsesTrueButton;
+	private ButtonWidget setInfiniteUsesFalseButton;
+
+	public FoodDisplayBlockScreen(FoodDisplayBlockEntity foodDisplayBlockEntity) {
+		super(NarratorManager.EMPTY);
+		this.foodDisplayBlockEntity = foodDisplayBlockEntity;
+		this.foodDisplayBlockData = this.foodDisplayBlockEntity.getFoodDisplayBlockData();
 //		this.screenPage = ScreenPage.APPLIED_EFFECT;
-//	}
-//
-//	private void done() {
-//		if (this.updateFoodBlock()) {
-//			this.close();
-//		}
-//	}
-//
-//	private void cancel() {
-//		this.close();
-//	}
-//
-//	@Override
-//	protected void init() {
+	}
+
+	private void done() {
+		if (this.updateFoodDisplayBlock()) {
+			this.close();
+		}
+	}
+
+	private void cancel() {
+		this.close();
+	}
+
+	private void setInfiniteUsesToTrue() {
+		this.infiniteUses = true;
+		this.updateWidgets();
+	}
+
+	private void setInfiniteUsesToFalse() {
+		this.infiniteUses = false;
+		this.updateWidgets();
+	}
+
+	@Override
+	protected void init() {
 //
 //		this.addDrawableChild(CyclingButtonWidget.builder(ScreenPage::asText).values((ScreenPage[]) ScreenPage.values()).initially(this.screenPage).omitKeyText().build(this.width / 2 - 154, 30, 300, 20, Text.empty(), (button, screenPage) -> {
 //			this.screenPage = screenPage;
@@ -125,11 +137,19 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //		this.interactionToolItemIdentifierField.setMaxLength(128);
 //		this.interactionToolItemIdentifierField.setText(this.foodDisplayBlockData.interaction_tool_item_identifier());
 //		this.addSelectableChild(this.interactionToolItemIdentifierField);
-//
-//		this.usePreventingStatusEffectIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 135, 300, 20, Text.empty());
-//		this.usePreventingStatusEffectIdentifierField.setMaxLength(128);
-//		this.usePreventingStatusEffectIdentifierField.setText(this.foodDisplayBlockData.use_preventing_status_effect_identifier());
-//		this.addSelectableChild(this.usePreventingStatusEffectIdentifierField);
+
+		this.usePreventingStatusEffectIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 40, 300, 20, Text.empty());
+		this.usePreventingStatusEffectIdentifierField.setMaxLength(128);
+		this.usePreventingStatusEffectIdentifierField.setText(this.foodDisplayBlockData.use_preventing_status_effect_identifier());
+		this.addSelectableChild(this.usePreventingStatusEffectIdentifierField);
+
+		this.enablesModificationStatusEffectIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 75, 300, 20, Text.empty());
+		this.enablesModificationStatusEffectIdentifierField.setMaxLength(128);
+		this.enablesModificationStatusEffectIdentifierField.setText(this.foodDisplayBlockData.enables_modification_status_effect_identifier());
+		this.addSelectableChild(this.enablesModificationStatusEffectIdentifierField);
+
+		// TODO item amount config y = 110
+		// TODO item rotations config y = 145
 //
 //		this.requiredAdvancementIdentifierField = new TextFieldWidget(this.textRenderer, this.width / 2 - 154, 170, 300, 20, Text.empty());
 //		this.requiredAdvancementIdentifierField.setMaxLength(128);
@@ -140,19 +160,18 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //		this.recoveryTimerThresholdField.setMaxLength(128);
 //		this.recoveryTimerThresholdField.setText(Integer.toString(this.foodDisplayBlockData.recovery_timer_threshold()));
 //		this.addSelectableChild(this.recoveryTimerThresholdField);
-//
-//		this.infiniteUses = this.foodDisplayBlockData.infinite_uses();
-//		this.toggleInfiniteUsesButton = this.addDrawableChild(CyclingButtonWidget.onOffBuilder(INFINITE_USE_TRUE_LABEL_TEXT, INFINITE_USE_FALSE_LABEL_TEXT).initially(this.infiniteUses).omitKeyText().build(this.width / 2 + 4, 205, 150, 20, Text.empty(), (button, infiniteUses) -> {
-//			this.infiniteUses = infiniteUses;
-//		}));
-//
-//		this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> this.done()).dimensions(this.width / 2 - 4 - 150, 229, 150, 20).build());
-//		this.addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, button -> this.cancel()).dimensions(this.width / 2 + 4, 229, 150, 20).build());
-//		this.updateWidgets();
-//	}
-//
-//	private void updateWidgets() {
-//
+
+		this.infiniteUses = this.foodDisplayBlockData.infinite_uses();
+		this.setInfiniteUsesTrueButton = this.addDrawableChild(ButtonWidget.builder(INFINITE_USE_TRUE_LABEL_TEXT, button -> this.setInfiniteUsesToTrue()).dimensions(this.width / 2 + 4, 169, 73, 20).build());
+		this.setInfiniteUsesFalseButton = this.addDrawableChild(ButtonWidget.builder(INFINITE_USE_FALSE_LABEL_TEXT, button -> this.setInfiniteUsesToFalse()).dimensions(this.width / 2 + 81, 169, 73, 20).build());
+
+		this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> this.done()).dimensions(this.width / 2 - 4 - 150, 193, 150, 20).build());
+		this.addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, button -> this.cancel()).dimensions(this.width / 2 + 4, 193, 150, 20).build());
+		this.updateWidgets();
+	}
+
+	private void updateWidgets() {
+
 //		this.appliedStatusEffectIdentifierField.setVisible(false);
 //		this.appliedStatusEffectDurationField.setVisible(false);
 //		this.appliedStatusEffectAmplifierField.setVisible(false);
@@ -163,10 +182,10 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //		this.interactionResultItemIdentifierField.setVisible(false);
 //		this.interactionToolItemIdentifierField.setVisible(false);
 //		this.usePreventingStatusEffectIdentifierField.setVisible(false);
-//		this.requiredAdvancementIdentifierField.setVisible(false);
-//		this.recoveryTimerThresholdField.setVisible(false);
+//		this.enablesModificationStatusEffectIdentifierField.setVisible(false);
+////		this.recoveryTimerThresholdField.setVisible(false);
 //		this.toggleInfiniteUsesButton.visible = false;
-//
+
 //		if (this.screenPage == ScreenPage.APPLIED_EFFECT) {
 //
 //			this.appliedStatusEffectIdentifierField.setVisible(true);
@@ -181,50 +200,51 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //
 //			this.interactionResultItemIdentifierField.setVisible(true);
 //			this.interactionToolItemIdentifierField.setVisible(true);
-//			this.usePreventingStatusEffectIdentifierField.setVisible(true);
-//			this.requiredAdvancementIdentifierField.setVisible(true);
+//		this.usePreventingStatusEffectIdentifierField.setVisible(true);
+//		this.enablesModificationStatusEffectIdentifierField.setVisible(true);
 //			this.recoveryTimerThresholdField.setVisible(true);
-//			this.toggleInfiniteUsesButton.visible = true;
-//
+		this.setInfiniteUsesTrueButton.active = !this.infiniteUses;
+		this.setInfiniteUsesFalseButton.active = this.infiniteUses;
+
 //		}
-//	}
-//
-//	@Override
-//	public void resize(MinecraftClient client, int width, int height) {
+	}
+
+	@Override
+	public void resize(MinecraftClient client, int width, int height) {
 //		ScreenPage var = this.screenPage;
-//		boolean bool = this.appliedStatusEffectAmbient;
+		boolean bool = this.infiniteUses;
 //		boolean bool1 = this.appliedStatusEffectShowParticles;
 //		boolean bool2 = this.appliedStatusEffectShowIcon;
 //		boolean bool3 = this.infiniteUses;
-//		String string = this.appliedStatusEffectIdentifierField.getText();
-//		String string1 = this.appliedStatusEffectDurationField.getText();
+		String string = this.usePreventingStatusEffectIdentifierField.getText();
+		String string1 = this.enablesModificationStatusEffectIdentifierField.getText();
 //		String string2 = this.appliedStatusEffectAmplifierField.getText();
 //		String string3 = this.interactionResultItemIdentifierField.getText();
 //		String string4 = this.interactionToolItemIdentifierField.getText();
 //		String string5 = this.usePreventingStatusEffectIdentifierField.getText();
-//		String string6 = this.requiredAdvancementIdentifierField.getText();
+//		String string6 = this.enablesModificationStatusEffectIdentifierField.getText();
 //		String string7 = this.recoveryTimerThresholdField.getText();
-//		this.init(client, width, height);
+		this.init(client, width, height);
 //		this.screenPage = var;
-//		this.appliedStatusEffectAmbient = bool;
+		this.infiniteUses = bool;
 //		this.appliedStatusEffectShowParticles = bool1;
 //		this.appliedStatusEffectShowIcon = bool2;
 //		this.infiniteUses = bool3;
-//		this.appliedStatusEffectIdentifierField.setText(string);
-//		this.appliedStatusEffectDurationField.setText(string1);
+		this.usePreventingStatusEffectIdentifierField.setText(string);
+		this.enablesModificationStatusEffectIdentifierField.setText(string1);
 //		this.appliedStatusEffectAmplifierField.setText(string2);
 //		this.interactionResultItemIdentifierField.setText(string3);
 //		this.interactionToolItemIdentifierField.setText(string4);
 //		this.usePreventingStatusEffectIdentifierField.setText(string5);
-//		this.requiredAdvancementIdentifierField.setText(string6);
+//		this.enablesModificationStatusEffectIdentifierField.setText(string6);
 //		this.recoveryTimerThresholdField.setText(string7);
-//	}
-//
-//	@Override
-//	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-//
-//		super.render(context, mouseX, mouseY, delta);
-//
+	}
+
+	@Override
+	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+
+		super.render(context, mouseX, mouseY, delta);
+
 //		if (this.screenPage == ScreenPage.APPLIED_EFFECT) {
 //			context.drawTextWithShadow(this.textRenderer, STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 55, Colors.LIGHT_GRAY);
 //			this.appliedStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
@@ -237,25 +257,26 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //			this.interactionResultItemIdentifierField.render(context, mouseX, mouseY, delta);
 //			context.drawTextWithShadow(this.textRenderer, INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 90, Colors.LIGHT_GRAY);
 //			this.interactionToolItemIdentifierField.render(context, mouseX, mouseY, delta);
-//			context.drawTextWithShadow(this.textRenderer, USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 125, Colors.LIGHT_GRAY);
-//			this.usePreventingStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
-//			context.drawTextWithShadow(this.textRenderer, REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 160, Colors.LIGHT_GRAY);
-//			this.requiredAdvancementIdentifierField.render(context, mouseX, mouseY, delta);
+		context.drawTextWithShadow(this.textRenderer, USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 30, Colors.LIGHT_GRAY);
+		this.usePreventingStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
+		context.drawTextWithShadow(this.textRenderer, ENABLES_MODIFICATION_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 65, Colors.LIGHT_GRAY);
+		this.enablesModificationStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
+		context.drawTextWithShadow(this.textRenderer, INFINITE_USES_LABEL_TEXT, this.width / 2 - 153, 175, Colors.LIGHT_GRAY);
 //			context.drawTextWithShadow(this.textRenderer, RECOVERY_TIMER_THRESHOLD_LABEL_TEXT, this.width / 2 - 153, 140, Colors.LIGHT_GRAY);
 //			this.recoveryTimerThresholdField.render(context, mouseX, mouseY, delta);
 //		}
-//
-//	}
-//
-//	@Override
-//	public boolean shouldPause() {
-//		return false;
-//	}
-//
-//	private boolean updateFoodBlock() {
-//		ClientPlayNetworking.send(new UpdateFoodBlockPacket(
-//				this.foodDisplayBlockEntity.getPos(),
-//				new FoodBlockEntity.FoodBlockData(
+
+	}
+
+	@Override
+	public boolean shouldPause() {
+		return false;
+	}
+
+	private boolean updateFoodDisplayBlock() {
+		ClientPlayNetworking.send(new UpdateFoodDisplayBlockPacket(
+				this.foodDisplayBlockEntity.getPos(),
+				new FoodDisplayBlockEntity.FoodDisplayBlockData(
 //						this.appliedStatusEffectIdentifierField.getText(),
 //						parseInt(this.appliedStatusEffectDurationField.getText()),
 //						parseInt(this.appliedStatusEffectAmplifierField.getText()),
@@ -264,48 +285,52 @@ package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 //						appliedStatusEffectShowIcon,
 //						this.interactionResultItemIdentifierField.getText(),
 //						this.interactionToolItemIdentifierField.getText(),
-//						this.usePreventingStatusEffectIdentifierField.getText(),
-//						this.requiredAdvancementIdentifierField.getText(),
+						this.usePreventingStatusEffectIdentifierField.getText(),
+						this.enablesModificationStatusEffectIdentifierField.getText(),
+						this.foodDisplayBlockData.rotation_1(),
+						this.foodDisplayBlockData.rotation_2(),
+						this.foodDisplayBlockData.rotation_3(),
+						this.foodDisplayBlockData.rotation_4(),
 //						parseInt(this.recoveryTimerThresholdField.getText()),
-//						infiniteUses
-//				)
-//		));
-//		return true;
-//	}
-//
-//	public static int parseInt(String string) {
-//		try {
-//			return Integer.parseInt(string);
-//		} catch (NumberFormatException numberFormatException) {
-//			return 0;
-//		}
-//	}
-//
-//	public boolean deferSubtitles() {
-//		return true;
-//	}
-//
-//	public static enum ScreenPage implements StringIdentifiable {
-//		APPLIED_EFFECT("applied_effect"),
-//		TRIGGER_SETTINGS("interaction_settings");
-//
-//		private final String name;
-//
-//		private ScreenPage(String name) {
-//			this.name = name;
-//		}
-//
-//		@Override
-//		public String asString() {
-//			return this.name;
-//		}
-//
-//		public static Optional<ScreenPage> byName(String name) {
-//			return Arrays.stream(ScreenPage.values()).filter(screenPage -> screenPage.asString().equals(name)).findFirst();
-//		}
-//
-//		public Text asText() {
-//			return Text.translatable("gui.food_block.screenPage." + this.name);
-//		}
-//	}
-//}
+						infiniteUses
+				)
+		));
+		return true;
+	}
+
+	public static int parseInt(String string) {
+		try {
+			return Integer.parseInt(string);
+		} catch (NumberFormatException numberFormatException) {
+			return 0;
+		}
+	}
+
+	public boolean deferSubtitles() {
+		return true;
+	}
+
+	public static enum ScreenPage implements StringIdentifiable {
+		APPLIED_EFFECT("applied_effect"),
+		TRIGGER_SETTINGS("interaction_settings");
+
+		private final String name;
+
+		private ScreenPage(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String asString() {
+			return this.name;
+		}
+
+		public static Optional<ScreenPage> byName(String name) {
+			return Arrays.stream(ScreenPage.values()).filter(screenPage -> screenPage.asString().equals(name)).findFirst();
+		}
+
+		public Text asText() {
+			return Text.translatable("gui.food_block.screenPage." + this.name);
+		}
+	}
+}

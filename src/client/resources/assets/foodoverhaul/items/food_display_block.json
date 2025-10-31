@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "foodoverhaul:block/food_display_block_empty"
+  }
+}

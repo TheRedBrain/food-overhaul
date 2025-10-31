@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "minecraft:item_frame",
+    "P": "#minecraft:planks"
+  },
+  "pattern": [
+    "#",
+    "P"
+  ],
+  "result": {
+    "count": 1,
+    "id": "foodoverhaul:food_display_block"
+  }
+}

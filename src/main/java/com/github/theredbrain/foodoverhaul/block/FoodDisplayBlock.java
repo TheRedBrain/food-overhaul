@@ -1,6 +1,7 @@
 package com.github.theredbrain.foodoverhaul.block;
 
 import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
+import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -31,10 +32,7 @@ import java.util.Optional;
 public class FoodDisplayBlock extends BlockWithEntity {
 	public static final MapCodec<FoodDisplayBlock> CODEC = createCodec(FoodDisplayBlock::new);
 
-	public static final BooleanProperty CORNER_1_FULL = BooleanProperty.of("corner_1_full");
-	public static final BooleanProperty CORNER_2_FULL = BooleanProperty.of("corner_2_full");
-	public static final BooleanProperty CORNER_3_FULL = BooleanProperty.of("corner_3_full");
-	public static final BooleanProperty CORNER_4_FULL = BooleanProperty.of("corner_4_full");
+	public static final BooleanProperty IS_EMPTY = BooleanProperty.of("is_empty");
 
 	protected static final VoxelShape SHAPE;
 
@@ -45,7 +43,7 @@ public class FoodDisplayBlock extends BlockWithEntity {
 
 	public FoodDisplayBlock(Settings settings) {
 		super(settings);
-		this.setDefaultState(this.stateManager.getDefaultState().with(CORNER_1_FULL, false).with(CORNER_2_FULL, false).with(CORNER_3_FULL, false).with(CORNER_4_FULL, false));
+		this.setDefaultState(this.stateManager.getDefaultState().with(IS_EMPTY, true));
 	}
 
 	@Nullable
@@ -57,12 +55,12 @@ public class FoodDisplayBlock extends BlockWithEntity {
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		super.appendProperties(builder);
-		builder.add(CORNER_1_FULL, CORNER_2_FULL, CORNER_3_FULL, CORNER_4_FULL);
+		builder.add(IS_EMPTY);
 	}
 
 	@Override
 	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.INVISIBLE;
+		return BlockRenderType.MODEL;
 	}
 
 	@Override
@@ -75,11 +73,19 @@ public class FoodDisplayBlock extends BlockWithEntity {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock) {
 			int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+			boolean canPlayerModify = foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player);
 
-			if (player.isSneaking() && foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player)) {
-				return foodDisplayBlockEntity.rotateItem(index);
+			if (player.isSneaking() && canPlayerModify) {
+
+				if (!foodDisplayBlockEntity.getDisplayedItems().get(index).isEmpty()) {
+					return foodDisplayBlockEntity.rotateItem(index);
+				} else if (player.isCreative()) {
+					((DuckPlayerEntityMixin) player).foodoverhaul$openFoodDisplayBlockScreen(foodDisplayBlockEntity);
+					return ActionResult.SUCCESS;
+				}
 			} else if (foodDisplayBlock.canPlayerEat(world, pos, state, foodDisplayBlockEntity, player)) {
 				return foodDisplayBlockEntity.consumeItem(world, player, index);
+
 			}
 			return ActionResult.FAIL;
 		}
@@ -98,16 +104,6 @@ public class FoodDisplayBlock extends BlockWithEntity {
 		}
 
 		return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
-	}
-
-	public static BlockState setCornerFullness(BlockState oldState, int index, boolean isFull) {
-		return switch (index) {
-			case 0 -> oldState.with(CORNER_1_FULL, isFull);
-			case 1 -> oldState.with(CORNER_2_FULL, isFull);
-			case 2 -> oldState.with(CORNER_3_FULL, isFull);
-			case 3 -> oldState.with(CORNER_4_FULL, isFull);
-			default -> oldState;
-		};
 	}
 
 	protected boolean canPlayerModify(WorldAccess world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, PlayerEntity player) {
@@ -135,7 +131,7 @@ public class FoodDisplayBlock extends BlockWithEntity {
 	}
 
 	static {
-		SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
+		SHAPE = Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 1.0, 15.0);
 	}
 
 }

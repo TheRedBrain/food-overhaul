@@ -4,6 +4,7 @@
 	"hud.message.foodEatenAlready": "You can't eat more ",
 	"hud.message.maxFoodEaten": "You are full.",
 	"hud.message.food_block.update_successful": "Food Block Updated!",
+	"hud.message.food_display_block.update_successful": "Food Display Block Updated!",
 
 	"foodoverhaul.server": "Server Side Settings",
 
@@ -29,5 +30,13 @@
 	"gui.food_block.required_advancement_identifier_label": "Required Advancement Identifier",
 	"gui.food_block.recovery_timer_threshold_label": "Recovery Timer Threshold",
 	"gui.food_block.infinite_use_true_label": "Infinite Uses: True",
-	"gui.food_block.infinite_use_false_label": "Infinite Uses: False"
+	"gui.food_block.infinite_use_false_label": "Infinite Uses: False",
+
+	"gui.food_display_block.use_preventing_status_effect_identifier_label": "Use Preventing Status Effect",
+	"gui.food_display_block.enables_modification_status_effect_identifier_label": "Enables Modification Status Effect",
+	"gui.food_display_block.infinite_use_true_label": "True",
+	"gui.food_display_block.infinite_use_false_label": "False",
+	"gui.food_display_block.infinite_uses_label": "Infinite Uses:",
+
+	"item.foodoverhaul.food_display_block": "Food Display Block"
 }

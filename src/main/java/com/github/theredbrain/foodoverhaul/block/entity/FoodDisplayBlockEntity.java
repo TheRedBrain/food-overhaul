@@ -2,6 +2,7 @@ package com.github.theredbrain.foodoverhaul.block.entity;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.FoodDisplayBlock;
+import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.Codec;
@@ -9,6 +10,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.ComponentsAccess;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
@@ -115,7 +118,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 				if (!this.foodDisplayBlockData.infinite_uses) {
 					this.displayedItems.set(index, remainingStack);
 					BlockState oldState = world.getBlockState(pos);
-					BlockState newState = FoodDisplayBlock.setCornerFullness(oldState, index, false);
+					BlockState newState = this.updateEmptyState(oldState);
 					this.markDirty();
 					world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 				}
@@ -126,15 +129,12 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 				if (!this.foodDisplayBlockData.infinite_uses) {
 					this.displayedItems.set(index, ItemStack.EMPTY);
 					BlockState oldState = world.getBlockState(pos);
-					BlockState newState = FoodDisplayBlock.setCornerFullness(oldState, index, false);
+					BlockState newState = this.updateEmptyState(oldState);
 					this.markDirty();
 					world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 				}
 			}
 			return ActionResult.SUCCESS;
-//		} else if (player.isCreativeLevelTwoOp()) {
-//			// TODO implement FoodDisplayBlockScreen if necessary
-//			return ActionResult.SUCCESS;
 		}
 		return ActionResult.PASS;
 	}
@@ -142,9 +142,9 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	public ActionResult addNewItem(World world, ItemStack itemStack, PlayerEntity player, int index) {
 		BlockState oldState = world.getBlockState(this.pos);
 
-		if (this.displayedItems.get(index).isEmpty()) {
+		if (this.displayedItems.get(index).isEmpty() && !itemStack.isEmpty()) {
 			this.displayedItems.set(index, itemStack.splitUnlessCreative(1, player));
-			BlockState newState = FoodDisplayBlock.setCornerFullness(oldState, index, true);
+			BlockState newState = this.updateEmptyState(oldState);
 			this.markDirty();
 			world.setBlockState(this.pos, newState, Block.NOTIFY_ALL);
 			return ActionResult.SUCCESS;
@@ -152,7 +152,15 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		return ActionResult.FAIL;
 	}
 
-	//region --- getter & setter ---
+	public BlockState updateEmptyState(BlockState oldState) {
+		for (int i = 0; i < 4; i++) {
+			if (!this.displayedItems.get(i).isEmpty()) {
+				return oldState.with(FoodDisplayBlock.IS_EMPTY, false);
+			}
+		}
+		return oldState.with(FoodDisplayBlock.IS_EMPTY, true);
+	}
+
 	public FoodDisplayBlockData getFoodDisplayBlockData() {
 		return this.foodDisplayBlockData;
 	}
@@ -165,7 +173,17 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		return this.displayedItems;
 	}
 
-	//endregion --- getter & setter ---
+	@Override
+	protected void readComponents(ComponentsAccess components) {
+		super.readComponents(components);
+		this.foodDisplayBlockData = components.getOrDefault(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, FoodDisplayBlockDataComponent.DEFAULT).food_display_block_data();
+	}
+
+	@Override
+	protected void addComponents(ComponentMap.Builder builder) {
+		super.addComponents(builder);
+		builder.add(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, new FoodDisplayBlockDataComponent(this.foodDisplayBlockData));
+	}
 
 	public record FoodDisplayBlockData(
 			String use_preventing_status_effect_identifier,

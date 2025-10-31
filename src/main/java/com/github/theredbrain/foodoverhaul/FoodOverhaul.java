@@ -1,6 +1,7 @@
 package com.github.theredbrain.foodoverhaul;
 
 import com.github.theredbrain.foodoverhaul.component.type.FoodBlockDataComponent;
+import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
 import com.github.theredbrain.foodoverhaul.entity.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
@@ -35,6 +36,8 @@ public class FoodOverhaul implements ModInitializer {
 	public static TagKey<StatusEffect> FOOD_EFFECTS = TagKey.of(RegistryKeys.STATUS_EFFECT, identifier("food_effects"));
 
 	public static ComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA;
+
+	public static ComponentType<FoodDisplayBlockDataComponent> FOOD_DISPLAY_BLOCK_DATA;
 
 	public static boolean tryEatOverhauledFood(PlayerEntity playerEntity, RegistryEntry<StatusEffect> statusEffectEntry) {
 		if (statusEffectEntry.value() instanceof RemoveFoodStatusEffect) {

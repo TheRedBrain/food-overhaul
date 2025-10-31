@@ -4,28 +4,19 @@ import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
 import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.tick.ScheduledTickView;
 
 public class OverhauledPieBlock extends GenericFoodBlock {
 	public static final MapCodec<OverhauledPieBlock> CODEC = createCodec(OverhauledPieBlock::new);
@@ -59,7 +50,6 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 		super.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
 
-//		player.incrementStat(Stats.EAT_CAKE_SLICE);
 		int i = state.get(BITES);
 		world.emitGameEvent(player, GameEvent.EAT, pos);
 		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
@@ -76,7 +66,6 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 		super.onSuccessfulItemInteraction(world, pos, state, foodBlockEntity, player);
 
-//		player.incrementStat(Stats.EAT_CAKE_SLICE);
 		int i = state.get(BITES);
 		world.playSound(player, pos, SoundEvents.BLOCK_WOOL_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
 		world.emitGameEvent(player, GameEvent.EAT, pos);

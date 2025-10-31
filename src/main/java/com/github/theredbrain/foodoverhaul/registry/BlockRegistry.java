@@ -6,6 +6,7 @@ import com.github.theredbrain.foodoverhaul.block.GenericFoodBlock;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -24,7 +25,7 @@ public class BlockRegistry {
 
 	public static RegistryKey<Block> FOOD_DISPLAY_BLOCK_BLOCK_KEY = RegistryKey.of(RegistryKeys.BLOCK, FoodOverhaul.identifier("food_display_block"));
 	public static RegistryKey<Item> FOOD_DISPLAY_BLOCK_ITEM_KEY = RegistryKey.of(RegistryKeys.ITEM, FoodOverhaul.identifier("food_display_block"));
-	public static final Block FOOD_DISPLAY_BLOCK = registerBlock(FOOD_DISPLAY_BLOCK_BLOCK_KEY, FOOD_DISPLAY_BLOCK_ITEM_KEY, new FoodDisplayBlock(AbstractBlock.Settings.create().registryKey(FOOD_DISPLAY_BLOCK_BLOCK_KEY).nonOpaque()), List.of());
+	public static final Block FOOD_DISPLAY_BLOCK = registerBlock(FOOD_DISPLAY_BLOCK_BLOCK_KEY, FOOD_DISPLAY_BLOCK_ITEM_KEY, new FoodDisplayBlock(AbstractBlock.Settings.create().registryKey(FOOD_DISPLAY_BLOCK_BLOCK_KEY).strength(0.3F).nonOpaque().allowsSpawning(Blocks::never).solidBlock(Blocks::never).suffocates(Blocks::never).blockVision(Blocks::never)), List.of());
 
 	private static Block registerBlock(RegistryKey<Block> block_key, RegistryKey<Item> item_key, Block block, List<RegistryKey<ItemGroup>> itemGroupList) {
 		Registry.register(Registries.ITEM, item_key, new BlockItem(block, new Item.Settings().registryKey(item_key)));

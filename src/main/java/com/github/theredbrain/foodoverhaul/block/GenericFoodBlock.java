@@ -88,7 +88,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
-			if (FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && player.isCreativeLevelTwoOp() && player.isSneaking()) {
+			if (/*FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && */player.isCreative() && player.isSneaking()) {
 				((DuckPlayerEntityMixin) player).foodoverhaul$openFoodBlockScreen(foodBlockEntity);
 				return ActionResult.SUCCESS;
 			} else if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
