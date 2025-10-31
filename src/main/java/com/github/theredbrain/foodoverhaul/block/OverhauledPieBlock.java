@@ -11,7 +11,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -93,7 +92,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 	}
 
 	@Override
-	protected int getComparatorOutput(BlockState state, World world, BlockPos pos, Direction direction) {
+	protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
 		return this.getMaxBites() - (Integer) state.get(BITES);
 	}
 

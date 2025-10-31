@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": "minecraft:item_frame",
-    "P": "#minecraft:planks"
+    "#": {
+      "item": "minecraft:item_frame"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
   },
   "pattern": [
     "#",

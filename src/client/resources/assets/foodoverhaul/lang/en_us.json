@@ -44,5 +44,5 @@
 	"gui.food_display_block.infinite_use_false_label": "False",
 	"gui.food_display_block.infinite_uses_label": "Infinite Uses:",
 
-	"item.foodoverhaul.food_display_block": "Food Display Block"
+	"block.foodoverhaul.food_display_block": "Food Display Block"
 }

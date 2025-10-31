@@ -9,6 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.CampfireBlockEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -21,6 +22,8 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.ItemActionResult;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -100,7 +103,7 @@ public class FoodDisplayBlock extends BlockWithEntity {
 	}
 
 	@Override
-	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.getBlockEntity(pos) instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock && foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player)) {
 			ActionResult result;
 			String viableItemsTagIdentifier = foodDisplayBlockEntity.getFoodDisplayBlockData().viable_items_tag_identifier();
@@ -112,12 +115,24 @@ public class FoodDisplayBlock extends BlockWithEntity {
 					result = foodDisplayBlockEntity.addNewItem(world, stack, player, index);
 				}
 				if (result.isAccepted()) {
-					return ActionResult.SUCCESS;
+					return ItemActionResult.SUCCESS;
 				}
 			}
 		}
 
-		return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+		return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+	}
+
+	@Override
+	protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+		if (!state.isOf(newState.getBlock())) {
+			BlockEntity blockEntity = world.getBlockEntity(pos);
+			if (blockEntity instanceof FoodDisplayBlockEntity) {
+				ItemScatterer.spawn(world, pos, ((FoodDisplayBlockEntity)blockEntity).getDisplayedItems());
+			}
+
+			super.onStateReplaced(state, world, pos, newState, moved);
+		}
 	}
 
 	protected boolean canPlayerModify(WorldAccess world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, PlayerEntity player) {

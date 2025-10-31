@@ -11,17 +11,15 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentsAccess;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
@@ -40,25 +38,27 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void writeData(WriteView view) {
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 
-		super.writeData(view);
+		super.writeNbt(nbt, registryLookup);
 
-		Inventories.writeData(view, this.displayedItems, true);
+		Inventories.writeNbt(nbt, this.displayedItems, registryLookup);
 
-		view.put("foodDisplayBlockData", FoodDisplayBlockData.CODEC, this.foodDisplayBlockData);
+		nbt.put("foodDisplayBlockData", FoodDisplayBlockData.CODEC.encodeStart(NbtOps.INSTANCE, this.foodDisplayBlockData).getOrThrow());
 
 	}
 
 	@Override
-	protected void readData(ReadView view) {
+	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 
-		super.readData(view);
+		super.readNbt(nbt, registryLookup);
 
 		this.displayedItems.clear();
-		Inventories.readData(view, this.displayedItems);
+		Inventories.readNbt(nbt, this.displayedItems, registryLookup);
 
-		this.foodDisplayBlockData = view.read("foodDisplayBlockData", FoodDisplayBlockData.CODEC).orElse(FoodDisplayBlockData.DEFAULT);
+		if (nbt.contains("foodDisplayBlockData")) {
+			this.foodDisplayBlockData = FoodDisplayBlockData.CODEC.parse(NbtOps.INSTANCE, nbt.get("foodDisplayBlockData")).resultOrPartial().orElse(FoodDisplayBlockData.DEFAULT);
+		}
 
 	}
 
@@ -70,13 +70,6 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	@Override
 	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
 		return this.createComponentlessNbt(registryLookup);
-	}
-
-	@Override
-	public void onBlockReplaced(BlockPos pos, BlockState oldState) {
-		if (this.world != null) {
-			ItemScatterer.spawn(this.world, pos, this.getDisplayedItems());
-		}
 	}
 
 	public ActionResult rotateItem(int index) {

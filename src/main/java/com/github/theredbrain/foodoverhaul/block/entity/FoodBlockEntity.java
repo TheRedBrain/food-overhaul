@@ -10,14 +10,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentsAccess;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -36,28 +34,30 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void writeData(WriteView view) {
+	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 
-		super.writeData(view);
+		super.writeNbt(nbt, registryLookup);
 
-		view.put("foodBlockData", FoodBlockData.CODEC, this.foodBlockData);
+		nbt.put("foodBlockData", FoodBlockData.CODEC.encodeStart(NbtOps.INSTANCE, this.foodBlockData).getOrThrow());
 
 		if (this.recoveryTimer > 0) {
-			view.putInt("recoveryTimer", this.recoveryTimer);
+			nbt.putInt("recoveryTimer", this.recoveryTimer);
 		} else {
-			view.remove("recoveryTimer");
+			nbt.remove("recoveryTimer");
 		}
 
 	}
 
 	@Override
-	protected void readData(ReadView view) {
+	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 
-		super.readData(view);
+		super.readNbt(nbt, registryLookup);
 
-		this.foodBlockData = view.read("foodBlockData", FoodBlockData.CODEC).orElse(FoodBlockData.DEFAULT);
+		if (nbt.contains("foodBlockData")) {
+			this.foodBlockData = FoodBlockData.CODEC.parse(NbtOps.INSTANCE, nbt.get("foodBlockData")).resultOrPartial().orElse(FoodBlockData.DEFAULT);
+		}
 
-		this.recoveryTimer = view.getInt("recoveryTimer", 0);
+		this.recoveryTimer = nbt.getInt("recoveryTimer");
 
 	}
 

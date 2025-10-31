@@ -14,6 +14,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -35,14 +36,13 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -109,7 +109,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 	}
 
 	@Override
-	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 
@@ -133,7 +133,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 					if ((interactionToolItem != Items.AIR && stack.isOf(interactionToolItem)) || (tag != null && stack.isIn(tag))) {
 						if (stack.getMaxCount() == 1) {
 //							world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F); // TODO custom id
-							stack.damage(1, player, hand.getEquipmentSlot());
+							stack.damage(1, player, player.getActiveHand() == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
 //							world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos); // TODO custom id
 						} else {
 
@@ -149,7 +149,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 							player.incrementStat(Stats.USED.getOrCreateStat(interactionToolItem));
 						}
 						this.onSuccessfulItemInteraction(world, pos, state, foodBlockEntity, player);
-						return ActionResult.SUCCESS;
+						return ItemActionResult.SUCCESS;
 					}
 				}
 			}
@@ -175,7 +175,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 						));
 					}
 					genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
-					return ActionResult.SUCCESS_SERVER;
+					return ActionResult.success(world.isClient());
 				}
 			}
 		}
@@ -224,8 +224,8 @@ public class GenericFoodBlock extends BlockWithEntity {
 	}
 
 	@Override
-	protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-		return direction == Direction.DOWN && !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+	protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+		return direction == Direction.DOWN && !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
 	}
 
 	@Override
