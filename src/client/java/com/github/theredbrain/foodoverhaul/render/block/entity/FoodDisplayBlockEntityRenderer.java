@@ -46,6 +46,8 @@ public class FoodDisplayBlockEntityRenderer implements BlockEntityRenderer<FoodD
 			foodDisplayBlockEntityRendererState.displayedItemStates.add(itemRenderState);
 		}
 
+		foodDisplayBlockEntityRendererState.singleItemMode = foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode();
+
 		foodDisplayBlockEntityRendererState.displayedItemRotations = foodDisplayBlockEntity.getFoodDisplayBlockData().getRotations();
 	}
 
@@ -53,24 +55,34 @@ public class FoodDisplayBlockEntityRenderer implements BlockEntityRenderer<FoodD
 		List<ItemRenderState> list = foodDisplayBlockEntityRenderState.displayedItemStates;
 		int[] itemDisplayRotations = foodDisplayBlockEntityRenderState.displayedItemRotations;
 
-		for (int i = 0; i < list.size(); ++i) {
-			ItemRenderState itemRenderState = (ItemRenderState) list.get(i);
+		if (foodDisplayBlockEntityRenderState.singleItemMode) {
+			ItemRenderState itemRenderState = (ItemRenderState) list.get(0);
 			if (!itemRenderState.isEmpty()) {
 				matrixStack.push();
-				if (i == 0) {
-					matrixStack.translate(0.25F, 0.25F, 0.75F);
-				} else if (i == 1) {
-					matrixStack.translate(0.25F, 0.25F, 0.25F);
-				} else if (i == 2) {
-					matrixStack.translate(0.75F, 0.25F, 0.25F);
-				} else if (i == 3) {
-					matrixStack.translate(0.75F, 0.25F, 0.75F);
-				}
-				matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(itemDisplayRotations[i] * -22.5F));
+				matrixStack.translate(0.5F, 0.25F, 0.5F);
+				matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(itemDisplayRotations[0] * -22.5F));
 				itemRenderState.render(matrixStack, orderedRenderCommandQueue, foodDisplayBlockEntityRenderState.lightmapCoordinates, OverlayTexture.DEFAULT_UV, 0);
 				matrixStack.pop();
 			}
+		} else {
+			for (int i = 0; i < list.size(); ++i) {
+				ItemRenderState itemRenderState = (ItemRenderState) list.get(i);
+				if (!itemRenderState.isEmpty()) {
+					matrixStack.push();
+					if (i == 0) {
+						matrixStack.translate(0.25F, 0.25F, 0.75F);
+					} else if (i == 1) {
+						matrixStack.translate(0.25F, 0.25F, 0.25F);
+					} else if (i == 2) {
+						matrixStack.translate(0.75F, 0.25F, 0.25F);
+					} else if (i == 3) {
+						matrixStack.translate(0.75F, 0.25F, 0.75F);
+					}
+					matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(itemDisplayRotations[i] * -22.5F));
+					itemRenderState.render(matrixStack, orderedRenderCommandQueue, foodDisplayBlockEntityRenderState.lightmapCoordinates, OverlayTexture.DEFAULT_UV, 0);
+					matrixStack.pop();
+				}
+			}
 		}
-
 	}
 }

@@ -29,6 +29,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.util.List;
+
 public class FoodDisplayBlockEntity extends BlockEntity {
 
 	private final DefaultedList<ItemStack> displayedItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
@@ -167,6 +169,13 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 
 	public void setFoodDisplayBlockData(FoodDisplayBlockData foodDisplayBlockData) {
 		this.foodDisplayBlockData = foodDisplayBlockData;
+		if (this.foodDisplayBlockData.single_item_mode) {
+			if (this.world != null) {
+				for (int i = 1; i < 4; i++) {
+					ItemScatterer.spawn(this.world, pos.getX(), pos.getY(), pos.getZ(), this.getDisplayedItems().get(i));
+				}
+			}
+		}
 	}
 
 	public DefaultedList<ItemStack> getDisplayedItems() {
@@ -188,6 +197,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	public record FoodDisplayBlockData(
 			String use_preventing_status_effect_identifier,
 			String enables_modification_status_effect_identifier,
+			boolean single_item_mode,
 			int rotation_1,
 			int rotation_2,
 			int rotation_3,
@@ -198,6 +208,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		public static final FoodDisplayBlockData DEFAULT = new FoodDisplayBlockData(
 				"",
 				"",
+				false,
 				0,
 				0,
 				0,
@@ -209,6 +220,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 				instance -> instance.group(
 								Codec.STRING.fieldOf("use_preventing_status_effect_identifier").forGetter(FoodDisplayBlockData::use_preventing_status_effect_identifier),
 								Codec.STRING.fieldOf("enables_modification_status_effect_identifier").forGetter(FoodDisplayBlockData::enables_modification_status_effect_identifier),
+								Codec.BOOL.fieldOf("single_item_mode").forGetter(FoodDisplayBlockData::single_item_mode),
 								Codec.INT.fieldOf("rotation_1").forGetter(FoodDisplayBlockData::rotation_1),
 								Codec.INT.fieldOf("rotation_2").forGetter(FoodDisplayBlockData::rotation_2),
 								Codec.INT.fieldOf("rotation_3").forGetter(FoodDisplayBlockData::rotation_3),
@@ -224,6 +236,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 			this(
 					registryByteBuf.readString(),
 					registryByteBuf.readString(),
+					registryByteBuf.readBoolean(),
 					registryByteBuf.readInt(),
 					registryByteBuf.readInt(),
 					registryByteBuf.readInt(),
@@ -235,6 +248,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		public void write(RegistryByteBuf registryByteBuf) {
 			registryByteBuf.writeString(this.use_preventing_status_effect_identifier);
 			registryByteBuf.writeString(this.enables_modification_status_effect_identifier);
+			registryByteBuf.writeBoolean(this.single_item_mode);
 			registryByteBuf.writeInt(this.rotation_1);
 			registryByteBuf.writeInt(this.rotation_2);
 			registryByteBuf.writeInt(this.rotation_3);
@@ -249,6 +263,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		static class Builder {
 			private String use_preventing_status_effect_identifier;
 			private String enables_modification_status_effect_identifier;
+			private boolean single_item_mode;
 			private int rotation_1;
 			private int rotation_2;
 			private int rotation_3;
@@ -258,6 +273,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 			public Builder(FoodDisplayBlockData base) {
 				this.use_preventing_status_effect_identifier = base.use_preventing_status_effect_identifier;
 				this.enables_modification_status_effect_identifier = base.enables_modification_status_effect_identifier;
+				this.single_item_mode = base.single_item_mode;
 				this.rotation_1 = base.rotation_1;
 				this.rotation_2 = base.rotation_2;
 				this.rotation_3 = base.rotation_3;
@@ -277,6 +293,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 				return new FoodDisplayBlockData(
 						this.use_preventing_status_effect_identifier,
 						this.enables_modification_status_effect_identifier,
+						this.single_item_mode,
 						this.rotation_1,
 						this.rotation_2,
 						this.rotation_3,

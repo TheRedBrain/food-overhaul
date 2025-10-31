@@ -1,6 +1,5 @@
 package com.github.theredbrain.foodoverhaul.network.packet;
 
-import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;

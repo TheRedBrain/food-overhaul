@@ -37,6 +37,9 @@ public class FoodDisplayBlockScreen extends Screen {
 	private static final Text ENABLES_MODIFICATION_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_display_block.enables_modification_status_effect_identifier_label");
 	//	private static final Text REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT = Text.translatable("gui.food_block.required_advancement_identifier_label");
 //	private static final Text RECOVERY_TIMER_THRESHOLD_LABEL_TEXT = Text.translatable("gui.food_block.recovery_timer_threshold_label");
+	private static final Text SINGLE_ITEM_MODE_TRUE_LABEL_TEXT = Text.translatable("gui.food_display_block.single_item_mode_true_label");
+	private static final Text SINGLE_ITEM_MODE_FALSE_LABEL_TEXT = Text.translatable("gui.food_display_block.single_item_mode_false_label");
+	private static final Text SINGLE_ITEM_MODE_LABEL_TEXT = Text.translatable("gui.food_display_block.single_item_mode_label");
 	private static final Text INFINITE_USE_TRUE_LABEL_TEXT = Text.translatable("gui.food_display_block.infinite_use_true_label");
 	private static final Text INFINITE_USE_FALSE_LABEL_TEXT = Text.translatable("gui.food_display_block.infinite_use_false_label");
 	private static final Text INFINITE_USES_LABEL_TEXT = Text.translatable("gui.food_display_block.infinite_uses_label");
@@ -60,6 +63,9 @@ public class FoodDisplayBlockScreen extends Screen {
 	private TextFieldWidget enablesModificationStatusEffectIdentifierField;
 	//	private TextFieldWidget requiredAdvancementIdentifierField;
 //	private TextFieldWidget recoveryTimerThresholdField;
+	private boolean singleItemMode;
+	private ButtonWidget setSingleItemModeTrueButton;
+	private ButtonWidget setSingleItemModeFalseButton;
 	private boolean infiniteUses;
 	private ButtonWidget setInfiniteUsesTrueButton;
 	private ButtonWidget setInfiniteUsesFalseButton;
@@ -79,6 +85,16 @@ public class FoodDisplayBlockScreen extends Screen {
 
 	private void cancel() {
 		this.close();
+	}
+
+	private void setSingleItemModeToTrue() {
+		this.singleItemMode = true;
+		this.updateWidgets();
+	}
+
+	private void setSingleItemModeToFalse() {
+		this.singleItemMode = false;
+		this.updateWidgets();
 	}
 
 	private void setInfiniteUsesToTrue() {
@@ -161,6 +177,10 @@ public class FoodDisplayBlockScreen extends Screen {
 //		this.recoveryTimerThresholdField.setText(Integer.toString(this.foodDisplayBlockData.recovery_timer_threshold()));
 //		this.addSelectableChild(this.recoveryTimerThresholdField);
 
+		this.singleItemMode = this.foodDisplayBlockData.single_item_mode();
+		this.setSingleItemModeTrueButton = this.addDrawableChild(ButtonWidget.builder(SINGLE_ITEM_MODE_TRUE_LABEL_TEXT, button -> this.setSingleItemModeToTrue()).dimensions(this.width / 2 + 4, 110, 73, 20).build());
+		this.setSingleItemModeFalseButton = this.addDrawableChild(ButtonWidget.builder(SINGLE_ITEM_MODE_FALSE_LABEL_TEXT, button -> this.setSingleItemModeToFalse()).dimensions(this.width / 2 + 81, 110, 73, 20).build());
+
 		this.infiniteUses = this.foodDisplayBlockData.infinite_uses();
 		this.setInfiniteUsesTrueButton = this.addDrawableChild(ButtonWidget.builder(INFINITE_USE_TRUE_LABEL_TEXT, button -> this.setInfiniteUsesToTrue()).dimensions(this.width / 2 + 4, 169, 73, 20).build());
 		this.setInfiniteUsesFalseButton = this.addDrawableChild(ButtonWidget.builder(INFINITE_USE_FALSE_LABEL_TEXT, button -> this.setInfiniteUsesToFalse()).dimensions(this.width / 2 + 81, 169, 73, 20).build());
@@ -203,6 +223,8 @@ public class FoodDisplayBlockScreen extends Screen {
 //		this.usePreventingStatusEffectIdentifierField.setVisible(true);
 //		this.enablesModificationStatusEffectIdentifierField.setVisible(true);
 //			this.recoveryTimerThresholdField.setVisible(true);
+		this.setSingleItemModeTrueButton.active = !this.singleItemMode;
+		this.setSingleItemModeFalseButton.active = this.singleItemMode;
 		this.setInfiniteUsesTrueButton.active = !this.infiniteUses;
 		this.setInfiniteUsesFalseButton.active = this.infiniteUses;
 
@@ -261,6 +283,7 @@ public class FoodDisplayBlockScreen extends Screen {
 		this.usePreventingStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
 		context.drawTextWithShadow(this.textRenderer, ENABLES_MODIFICATION_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 65, Colors.LIGHT_GRAY);
 		this.enablesModificationStatusEffectIdentifierField.render(context, mouseX, mouseY, delta);
+		context.drawTextWithShadow(this.textRenderer, SINGLE_ITEM_MODE_LABEL_TEXT, this.width / 2 - 153, 116, Colors.LIGHT_GRAY);
 		context.drawTextWithShadow(this.textRenderer, INFINITE_USES_LABEL_TEXT, this.width / 2 - 153, 175, Colors.LIGHT_GRAY);
 //			context.drawTextWithShadow(this.textRenderer, RECOVERY_TIMER_THRESHOLD_LABEL_TEXT, this.width / 2 - 153, 140, Colors.LIGHT_GRAY);
 //			this.recoveryTimerThresholdField.render(context, mouseX, mouseY, delta);
@@ -287,12 +310,13 @@ public class FoodDisplayBlockScreen extends Screen {
 //						this.interactionToolItemIdentifierField.getText(),
 						this.usePreventingStatusEffectIdentifierField.getText(),
 						this.enablesModificationStatusEffectIdentifierField.getText(),
+						this.singleItemMode,
 						this.foodDisplayBlockData.rotation_1(),
 						this.foodDisplayBlockData.rotation_2(),
 						this.foodDisplayBlockData.rotation_3(),
 						this.foodDisplayBlockData.rotation_4(),
 //						parseInt(this.recoveryTimerThresholdField.getText()),
-						infiniteUses
+						this.infiniteUses
 				)
 		));
 		return true;

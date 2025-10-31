@@ -11,6 +11,7 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public class FoodDisplayBlockEntityRendererState extends BlockEntityRenderState {
 	public List<ItemRenderState> displayedItemStates = Collections.emptyList();
+	public boolean singleItemMode = false;
 	public int[] displayedItemRotations = new int[4];
 
 	public FoodDisplayBlockEntityRendererState() {

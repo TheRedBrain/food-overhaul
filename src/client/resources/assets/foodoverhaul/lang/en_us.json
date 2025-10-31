@@ -34,6 +34,9 @@
 
 	"gui.food_display_block.use_preventing_status_effect_identifier_label": "Use Preventing Status Effect",
 	"gui.food_display_block.enables_modification_status_effect_identifier_label": "Enables Modification Status Effect",
+	"gui.food_display_block.single_item_mode_true_label": "True",
+	"gui.food_display_block.single_item_mode_false_label": "False",
+	"gui.food_display_block.single_item_mode_label": "Single Item Mode:",
 	"gui.food_display_block.infinite_use_true_label": "True",
 	"gui.food_display_block.infinite_use_false_label": "False",
 	"gui.food_display_block.infinite_uses_label": "Infinite Uses:",

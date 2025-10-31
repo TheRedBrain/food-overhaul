@@ -72,7 +72,12 @@ public class FoodDisplayBlock extends BlockWithEntity {
 	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock) {
-			int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+			int index;
+			if (foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode()) {
+				index = 0;
+			} else {
+				index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+			}
 			boolean canPlayerModify = foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player);
 
 			if (player.isSneaking() && canPlayerModify) {
@@ -95,8 +100,13 @@ public class FoodDisplayBlock extends BlockWithEntity {
 	@Override
 	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.getBlockEntity(pos) instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock && foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player)) {
-			int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
-			ActionResult result = foodDisplayBlockEntity.addNewItem(world, stack, player, index);
+			ActionResult result;
+			if (foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode()) {
+				result = foodDisplayBlockEntity.addNewItem(world, stack, player, 0);
+			} else {
+				int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+				result = foodDisplayBlockEntity.addNewItem(world, stack, player, index);
+			}
 
 			if (result.isAccepted()) {
 				return ActionResult.SUCCESS;
