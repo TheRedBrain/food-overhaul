@@ -11,8 +11,6 @@
 	"foodoverhaul.server.food_effect_duration_threshold_to_allow_eating": "Food Effect Duration Threshold",
 	"foodoverhaul.server.food_effect_duration_threshold_to_allow_eating.desc": "When food effects have less than this many ticks of duration left, their corresponding food type can be eaten again",
 	"foodoverhaul.server.natural_maximum_food_effects": "Natural Max Food Effects",
-	"foodoverhaul.server.enable_food_block_config_screen": "Enable Food Block Screen",
-	"foodoverhaul.server.enable_food_block_config_screen.desc": "Creative level 2 OP players can shift-click a food block with empty hands to open a config screen.",
 
 	"gui.food_block.status_effect_identifier_label": "Effect Identifier",
 	"gui.food_block.status_effect_amplifier_label": "Amplifier",
@@ -34,9 +32,14 @@
 
 	"gui.food_display_block.use_preventing_status_effect_identifier_label": "Use Preventing Status Effect",
 	"gui.food_display_block.enables_modification_status_effect_identifier_label": "Enables Modification Status Effect",
+	"gui.food_display_block.viable_items_tag_identifier_label": "Viable Items Tag Identifier",
 	"gui.food_display_block.single_item_mode_true_label": "True",
 	"gui.food_display_block.single_item_mode_false_label": "False",
 	"gui.food_display_block.single_item_mode_label": "Single Item Mode:",
+	"gui.food_display_block.item_rotation_1_label": "Rotation Item 1",
+	"gui.food_display_block.item_rotation_2_label": "Rotation Item 2",
+	"gui.food_display_block.item_rotation_3_label": "Rotation Item 3",
+	"gui.food_display_block.item_rotation_4_label": "Rotation Item 4",
 	"gui.food_display_block.infinite_use_true_label": "True",
 	"gui.food_display_block.infinite_use_false_label": "False",
 	"gui.food_display_block.infinite_uses_label": "Infinite Uses:",

@@ -4,7 +4,7 @@
       "model": "foodoverhaul:block/food_display_block_empty"
     },
     "is_empty=false": {
-      "model": "minecraft:block/air"
+      "model": "foodoverhaul:block/food_display_block_full"
     }
   }
 }

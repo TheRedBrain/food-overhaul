@@ -13,7 +13,9 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.ActionResult;
@@ -101,15 +103,17 @@ public class FoodDisplayBlock extends BlockWithEntity {
 	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.getBlockEntity(pos) instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock && foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player)) {
 			ActionResult result;
-			if (foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode()) {
-				result = foodDisplayBlockEntity.addNewItem(world, stack, player, 0);
-			} else {
-				int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
-				result = foodDisplayBlockEntity.addNewItem(world, stack, player, index);
-			}
-
-			if (result.isAccepted()) {
-				return ActionResult.SUCCESS;
+			String viableItemsTagIdentifier = foodDisplayBlockEntity.getFoodDisplayBlockData().viable_items_tag_identifier();
+			if (viableItemsTagIdentifier.isEmpty() || stack.isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of(viableItemsTagIdentifier)))) {
+				if (foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode()) {
+					result = foodDisplayBlockEntity.addNewItem(world, stack, player, 0);
+				} else {
+					int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+					result = foodDisplayBlockEntity.addNewItem(world, stack, player, index);
+				}
+				if (result.isAccepted()) {
+					return ActionResult.SUCCESS;
+				}
 			}
 		}
 
@@ -125,7 +129,7 @@ public class FoodDisplayBlock extends BlockWithEntity {
 				canPlayerInteract = player.hasStatusEffect(optional_status_effect.get());
 			}
 		}
-		return canPlayerInteract;
+		return canPlayerInteract || player.isCreative();
 	}
 
 	protected boolean canPlayerEat(WorldAccess world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, PlayerEntity player) {
