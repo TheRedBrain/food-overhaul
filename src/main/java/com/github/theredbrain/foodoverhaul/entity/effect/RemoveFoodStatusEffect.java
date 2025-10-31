@@ -1,4 +1,4 @@
-package com.github.theredbrain.foodoverhaul.effect;
+package com.github.theredbrain.foodoverhaul.entity.effect;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import net.minecraft.entity.LivingEntity;

@@ -1,10 +1,19 @@
 package com.github.theredbrain.foodoverhaul.block.entity;
 
+import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.GenericFoodBlock;
+import com.github.theredbrain.foodoverhaul.component.type.FoodBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
@@ -12,77 +21,24 @@ import net.minecraft.world.World;
 
 public class FoodBlockEntity extends BlockEntity {
 
-	private String appliedStatusEffectIdentifier = "";
-	private int duration = 0;
-	private int amplifier = 0;
-	private boolean ambient = false;
-	private boolean showParticles = false;
-	private boolean showIcon = true;
-
-	private String usePreventingStatusEffectIdentifier = "";
-	private String requiredAdvancementIdentifier = "";
-
 	private int recoveryTimer = 0;
-	private int recoveryTimerThreshold = 0;
-	private boolean infiniteUses = false;
+
+	private FoodBlockData foodBlockData = FoodBlockData.DEFAULT;
+
+	public FoodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+		super(type, pos, state);
+	}
 
 	public FoodBlockEntity(BlockPos pos, BlockState state) {
-		super(EntityRegistry.GENERIC_FOOD_BLOCK_ENTITY, pos, state);
+		this(EntityRegistry.FOOD_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override
 	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 
+		super.writeNbt(nbt, registryLookup);
 
-		if (!this.appliedStatusEffectIdentifier.isEmpty()) {
-			nbt.putString("appliedStatusEffectIdentifier", this.appliedStatusEffectIdentifier);
-		} else {
-			nbt.remove("appliedStatusEffectIdentifier");
-		}
-
-		if (this.duration != 0) {
-			nbt.putInt("duration", this.duration);
-		} else {
-			nbt.remove("duration");
-		}
-
-		if (this.amplifier != 0) {
-			nbt.putInt("amplifier", this.amplifier);
-		} else {
-			nbt.remove("amplifier");
-		}
-
-		if (this.ambient) {
-			nbt.putBoolean("ambient", true);
-		} else {
-			nbt.remove("ambient");
-		}
-
-		if (this.showParticles) {
-			nbt.putBoolean("showParticles", true);
-		} else {
-			nbt.remove("showParticles");
-		}
-
-		if (this.showIcon) {
-			nbt.putBoolean("showIcon", true);
-		} else {
-			nbt.remove("showIcon");
-		}
-
-
-		if (!this.usePreventingStatusEffectIdentifier.isEmpty()) {
-			nbt.putString("usePreventingStatusEffectIdentifier", this.usePreventingStatusEffectIdentifier);
-		} else {
-			nbt.remove("usePreventingStatusEffectIdentifier");
-		}
-
-		if (!this.requiredAdvancementIdentifier.isEmpty()) {
-			nbt.putString("requiredAdvancementIdentifier", this.requiredAdvancementIdentifier);
-		} else {
-			nbt.remove("requiredAdvancementIdentifier");
-		}
-
+		nbt.put("foodBlockData", FoodBlockData.CODEC.encodeStart(NbtOps.INSTANCE, this.foodBlockData).getOrThrow());
 
 		if (this.recoveryTimer > 0) {
 			nbt.putInt("recoveryTimer", this.recoveryTimer);
@@ -90,46 +46,18 @@ public class FoodBlockEntity extends BlockEntity {
 			nbt.remove("recoveryTimer");
 		}
 
-		if (this.recoveryTimerThreshold > 0) {
-			nbt.putInt("recoveryTimerThreshold", this.recoveryTimerThreshold);
-		} else {
-			nbt.remove("recoveryTimerThreshold");
-		}
-
-		if (this.infiniteUses) {
-			nbt.putBoolean("infiniteUses", true);
-		} else {
-			nbt.remove("infiniteUses");
-		}
-
 	}
 
 	@Override
 	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 
-		this.appliedStatusEffectIdentifier = nbt.getString("appliedStatusEffectIdentifier");
+		super.readNbt(nbt, registryLookup);
 
-		this.duration = nbt.getInt("duration");
-
-		this.amplifier = nbt.getInt("amplifier");
-
-		this.ambient = nbt.getBoolean("ambient");
-
-		this.showParticles = nbt.getBoolean("showParticles");
-
-		this.showIcon = nbt.getBoolean("showIcon");
-
-
-		this.usePreventingStatusEffectIdentifier = nbt.getString("usePreventingStatusEffectIdentifier");
-
-		this.requiredAdvancementIdentifier = nbt.getString("requiredAdvancementIdentifier");
-
+		if (nbt.contains("foodBlockData")) {
+			this.foodBlockData = FoodBlockData.CODEC.parse(NbtOps.INSTANCE, nbt.get("foodBlockData")).resultOrPartial().orElse(FoodBlockData.DEFAULT);
+		}
 
 		this.recoveryTimer = nbt.getInt("recoveryTimer");
-
-		this.recoveryTimerThreshold = nbt.getInt("recoveryTimerThreshold");
-
-		this.infiniteUses = nbt.getBoolean("infiniteUses");
 
 	}
 
@@ -138,99 +66,129 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-		return this.createComponentlessNbt(registryLookup);
+	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
+		return this.createComponentlessNbt(registries);
 	}
 
 	public static void tick(World world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
-		if (!world.isClient && world.getTime() % 20L == 0L && foodBlockEntity.recoveryTimerThreshold > 0) {
+		if (!world.isClient() && world.getTime() % 20L == 0L && foodBlockEntity.foodBlockData.recovery_timer_threshold() > 0) {
 			foodBlockEntity.recoveryTimer++;
-			if (foodBlockEntity.recoveryTimer >= foodBlockEntity.recoveryTimerThreshold) {
+			if (foodBlockEntity.recoveryTimer >= foodBlockEntity.foodBlockData.recovery_timer_threshold()) {
 				foodBlockEntity.recoveryTimer = 0;
 				GenericFoodBlock.recoveryTick(world, pos, state);
 			}
 		}
 	}
 
-	//region --- getter & setter ---
-	public String getAppliedStatusEffectIdentifier() {
-		return this.appliedStatusEffectIdentifier;
+	public FoodBlockData getFoodBlockData() {
+		return this.foodBlockData;
 	}
 
-	public void setAppliedStatusEffectIdentifier(String appliedStatusEffectIdentifier) {
-		this.appliedStatusEffectIdentifier = appliedStatusEffectIdentifier;
-	}
-
-	public int getDuration() {
-		return duration;
-	}
-
-	public void setDuration(int duration) {
-		this.duration = duration;
-	}
-
-	public int getAmplifier() {
-		return amplifier;
-	}
-
-	public void setAmplifier(int amplifier) {
-		this.amplifier = amplifier;
-	}
-
-	public boolean getAmbient() {
-		return ambient;
-	}
-
-	public void setAmbient(boolean ambient) {
-		this.ambient = ambient;
-	}
-
-	public boolean getShowParticles() {
-		return showParticles;
-	}
-
-	public void setShowParticles(boolean showParticles) {
-		this.showParticles = showParticles;
-	}
-
-	public boolean getShowIcon() {
-		return showIcon;
-	}
-
-	public void setShowIcon(boolean showIcon) {
-		this.showIcon = showIcon;
-	}
-
-	public String getUsePreventingStatusEffectIdentifier() {
-		return usePreventingStatusEffectIdentifier;
-	}
-
-	public void setUsePreventingStatusEffectIdentifier(String usePreventingStatusEffectIdentifier) {
-		this.usePreventingStatusEffectIdentifier = usePreventingStatusEffectIdentifier;
-	}
-
-	public String getRequiredAdvancementIdentifier() {
-		return requiredAdvancementIdentifier;
-	}
-
-	public void setRequiredAdvancementIdentifier(String requiredAdvancementIdentifier) {
-		this.requiredAdvancementIdentifier = requiredAdvancementIdentifier;
+	public void setFoodBlockData(FoodBlockData foodBlockData) {
+		this.foodBlockData = foodBlockData;
 	}
 
 	public int getRecoveryTimer() {
-		return recoveryTimer;
+		return this.recoveryTimer;
 	}
 
 	public void setRecoveryTimer(int recoveryTimer) {
 		this.recoveryTimer = recoveryTimer;
 	}
 
-	public boolean getInfiniteUses() {
-		return infiniteUses;
+	@Override
+	protected void readComponents(ComponentsAccess components) {
+		super.readComponents(components);
+		this.foodBlockData = components.getOrDefault(FoodOverhaul.FOOD_BLOCK_DATA, FoodBlockDataComponent.DEFAULT).food_block_data();
 	}
 
-	public void setInfiniteUses(boolean infiniteUses) {
-		this.infiniteUses = infiniteUses;
+	@Override
+	protected void addComponents(ComponentMap.Builder builder) {
+		super.addComponents(builder);
+		builder.add(FoodOverhaul.FOOD_BLOCK_DATA, new FoodBlockDataComponent(this.foodBlockData));
 	}
-	//endregion --- getter & setter ---
+
+	public record FoodBlockData(
+			String applied_status_effect_identifier,
+			int applied_status_effect_duration,
+			int applied_status_effect_amplifier,
+			boolean applied_status_effect_ambient,
+			boolean applied_status_effect_show_particles,
+			boolean applied_status_effect_show_icon,
+			String interaction_result_item_identifier,
+			String interaction_tool_item_identifier,
+			String use_preventing_status_effect_identifier,
+			String required_advancement_identifier,
+			int recovery_timer_threshold,
+			boolean infinite_uses
+	) {
+
+		public static final FoodBlockData DEFAULT = new FoodBlockData(
+				"",
+				0,
+				0,
+				false,
+				false,
+				true,
+				"",
+				"",
+				"",
+				"",
+				0,
+				false
+		);
+
+		public static final Codec<FoodBlockData> CODEC = RecordCodecBuilder.create(
+				instance -> instance.group(
+								Codec.STRING.fieldOf("applied_status_effect_identifier").forGetter(FoodBlockData::applied_status_effect_identifier),
+								Codec.INT.fieldOf("applied_status_effect_duration").forGetter(FoodBlockData::applied_status_effect_duration),
+								Codec.INT.fieldOf("applied_status_effect_amplifier").forGetter(FoodBlockData::applied_status_effect_amplifier),
+								Codec.BOOL.fieldOf("applied_status_effect_ambient").forGetter(FoodBlockData::applied_status_effect_ambient),
+								Codec.BOOL.fieldOf("applied_status_effect_show_particles").forGetter(FoodBlockData::applied_status_effect_show_particles),
+								Codec.BOOL.fieldOf("applied_status_effect_show_icon").forGetter(FoodBlockData::applied_status_effect_show_icon),
+								Codec.STRING.fieldOf("interaction_result_item_identifier").forGetter(FoodBlockData::interaction_result_item_identifier),
+								Codec.STRING.fieldOf("interaction_tool_item_identifier").forGetter(FoodBlockData::interaction_tool_item_identifier),
+								Codec.STRING.fieldOf("use_preventing_status_effect_identifier").forGetter(FoodBlockData::use_preventing_status_effect_identifier),
+								Codec.STRING.fieldOf("required_advancement_identifier").forGetter(FoodBlockData::required_advancement_identifier),
+								Codec.INT.fieldOf("recovery_timer_threshold").forGetter(FoodBlockData::recovery_timer_threshold),
+								Codec.BOOL.fieldOf("infinite_uses").forGetter(FoodBlockData::infinite_uses)
+						)
+						.apply(instance, FoodBlockData::new)
+		);
+
+		public static final PacketCodec<RegistryByteBuf, FoodBlockData> PACKET_CODEC = PacketCodec.of(FoodBlockData::write, FoodBlockData::new);
+
+		public FoodBlockData(RegistryByteBuf registryByteBuf) {
+			this(
+					registryByteBuf.readString(),
+					registryByteBuf.readInt(),
+					registryByteBuf.readInt(),
+					registryByteBuf.readBoolean(),
+					registryByteBuf.readBoolean(),
+					registryByteBuf.readBoolean(),
+					registryByteBuf.readString(),
+					registryByteBuf.readString(),
+					registryByteBuf.readString(),
+					registryByteBuf.readString(),
+					registryByteBuf.readInt(),
+					registryByteBuf.readBoolean()
+			);
+		}
+
+		public void write(RegistryByteBuf registryByteBuf) {
+			registryByteBuf.writeString(this.applied_status_effect_identifier);
+			registryByteBuf.writeInt(this.applied_status_effect_duration);
+			registryByteBuf.writeInt(this.applied_status_effect_amplifier);
+			registryByteBuf.writeBoolean(this.applied_status_effect_ambient);
+			registryByteBuf.writeBoolean(this.applied_status_effect_show_particles);
+			registryByteBuf.writeBoolean(this.applied_status_effect_show_icon);
+			registryByteBuf.writeString(this.interaction_result_item_identifier);
+			registryByteBuf.writeString(this.interaction_tool_item_identifier);
+			registryByteBuf.writeString(this.use_preventing_status_effect_identifier);
+			registryByteBuf.writeString(this.required_advancement_identifier);
+			registryByteBuf.writeInt(this.recovery_timer_threshold);
+			registryByteBuf.writeBoolean(this.infinite_uses);
+		}
+	}
+
 }

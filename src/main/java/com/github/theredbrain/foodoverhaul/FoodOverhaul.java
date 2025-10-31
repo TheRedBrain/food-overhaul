@@ -1,24 +1,21 @@
 package com.github.theredbrain.foodoverhaul;
 
+import com.github.theredbrain.foodoverhaul.component.type.FoodBlockDataComponent;
+import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
-import com.github.theredbrain.foodoverhaul.effect.RemoveFoodStatusEffect;
+import com.github.theredbrain.foodoverhaul.entity.effect.RemoveFoodStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
+import com.github.theredbrain.foodoverhaul.registry.DataComponentRegistry;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.github.theredbrain.foodoverhaul.registry.ServerPacketRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.block.Block;
+import net.minecraft.component.ComponentType;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
@@ -37,6 +34,10 @@ public class FoodOverhaul implements ModInitializer {
 	public static RegistryEntry<EntityAttribute> MAX_FOOD_EFFECTS;
 
 	public static TagKey<StatusEffect> FOOD_EFFECTS = TagKey.of(RegistryKeys.STATUS_EFFECT, identifier("food_effects"));
+
+	public static ComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA;
+
+	public static ComponentType<FoodDisplayBlockDataComponent> FOOD_DISPLAY_BLOCK_DATA;
 
 	public static boolean tryEatOverhauledFood(PlayerEntity playerEntity, RegistryEntry<StatusEffect> statusEffectEntry) {
 		if (statusEffectEntry.value() instanceof RemoveFoodStatusEffect) {
@@ -65,19 +66,15 @@ public class FoodOverhaul implements ModInitializer {
 		return true;
 	}
 
-	public static Block registerFoodBlock(Identifier identifier, Block block, Item.Settings itemSettings, RegistryKey<ItemGroup> itemGroup) {
-		Registry.register(Registries.ITEM, identifier, new BlockItem(block, itemSettings));
-		ItemGroupEvents.modifyEntriesEvent(itemGroup).register(content -> content.add(block));
-		return Registry.register(Registries.BLOCK, identifier, block);
-	}
-
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Enjoy your overhauled food!");
 		SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
 		BlockRegistry.init();
+		DataComponentRegistry.init();
 		EntityRegistry.init();
+		ServerPacketRegistry.init();
 	}
 
 	public static Identifier identifier(String path) {

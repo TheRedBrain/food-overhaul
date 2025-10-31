@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "is_empty=true": {
+      "model": "foodoverhaul:block/food_display_block_empty"
+    },
+    "is_empty=false": {
+      "model": "foodoverhaul:block/food_display_block_full"
+    }
+  }
+}
