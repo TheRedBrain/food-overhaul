@@ -50,8 +50,6 @@ The Food Display Block can hold and display up to 4 items. When these items have
 
 The Food Display Block can be configured by creative mode players via a config screen.
 
-This block is currently not obtainable in survival mode.
-
 ## Just want to play?
 
 [Food Overhaul - Vanilla Foods](https://github.com/TheRedBrain/food-overhaul-vanilla-foods) adds food effects to vanilla items.
