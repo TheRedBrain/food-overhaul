@@ -2,14 +2,19 @@
 
 - updated to 1.21.10
 
+> The base value for the "foodoverhaul:maximum_food_effects" entity attribute was changed. Existing players in updated worlds should reset the attribute using the /attribute reset command.
+
 ## Additions
 
-- added "foodoverhaul:remove_effects_in_tag" consume effect, clears all status effects in a given effects tag when item is consumed
 - added "natural_maximum_food_effects" server config option
+- added Food Display Block, can hold up to 4 items which can be consumed by interacting with the block. The usual checks for existing food effects and hunger apply.
+  - This block is mainly designed for adventure maps and servers, so it can't be obtained in survival gameplay. Feedback and suggestions are very welcome, as always!
 
 ## Changes
 
-- removed FoodStatusEffect and RemoveFoodStatusEffect classes, all functionality is now implemented using components and tags
+- reworked the Food Block
+  - allows for more configuration
+  - has a config screen for creative mode players
 
 # 2.3.0
 

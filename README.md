@@ -21,7 +21,7 @@ Food Overhaul supports two different item types, consumables and potions. They a
 ## What prevents a player from eating every available food?
 
 Each player can only have a limited amount of food status effects active at a time. It's not possible to eat food when that limit is reached.
-The limit is controlled by an entity attribute called **_foodoverhaul:max_food_effects_** and is 3 by default.
+The limit is controlled by an entity attribute called **_foodoverhaul:max_food_effects_** and is 0 by default.
 
 The player doesn't have to wait until an effect is completely gone to refresh it.
 When a food effect is running out, it's corresponding food item can be consumed again. The exact threshold after which this is possible is set in the server config.
@@ -38,11 +38,19 @@ https://modrinth.com/mod/item-components and https://modrinth.com/mod/default-co
 
 This gives mod pack authors / players the option to use their own food effects.
 
-## Food blocks
+## Food Blocks
 
 Food blocks can be interacted with to grant a status effect to the player. When that status effect is a food effect, interaction is only possible when the player doesn't already have the effect.
 
 Food Overhaul provides a simple Java API for add-on mods to create food blocks.
+
+## Food Display Block
+
+The Food Display Block can hold and display up to 4 items. When these items have the "minecraft:consumable" component, they can be consumed by interacting with the display block. The usual checks for existing food effects and hunger are applied.
+
+The Food Display Block can be configured by creative mode players via a config screen.
+
+This block is currently not obtainable in survival mode.
 
 ## Just want to play?
 
