@@ -4,20 +4,20 @@ import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
-import net.minecraft.item.consume.ConsumeEffect;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
 
-@Mixin(ConsumableComponent.class)
+@Mixin(Consumable.class)
 public class ConsumableComponentMixin {
 
 	@Shadow
@@ -29,16 +29,16 @@ public class ConsumableComponentMixin {
 		boolean canConsume = true;
 		boolean appliesFoodEffect = false;
 		for (ConsumeEffect effect : this.onConsumeEffects) {
-			if (effect instanceof ApplyEffectsConsumeEffect applyEffectsConsumeEffect) {
-				for (StatusEffectInstance instance : applyEffectsConsumeEffect.effects()) {
-					if (instance.getEffectType().isIn(FoodOverhaul.FOOD_EFFECTS)) {
+			if (effect instanceof ApplyStatusEffectsConsumeEffect applyEffectsConsumeEffect) {
+				for (MobEffectInstance instance : applyEffectsConsumeEffect.effects()) {
+					if (instance.getEffect().is(FoodOverhaul.FOOD_EFFECTS)) {
 						appliesFoodEffect = true;
 						break;
 					}
 				}
 			}
 		}
-		if (appliesFoodEffect && user instanceof PlayerEntity playerEntity) {
+		if (appliesFoodEffect && user instanceof Player playerEntity) {
 			canConsume = ((DuckPlayerEntityMixin) playerEntity).foodoverhaul$canConsumeItem(stack);
 		}
 		return canConsume && original.call(user, stack);

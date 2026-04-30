@@ -6,20 +6,20 @@ import com.github.theredbrain.foodoverhaul.component.type.FoodBlockDataComponent
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentsAccess;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class FoodBlockEntity extends BlockEntity {
 
@@ -36,42 +36,42 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void writeData(WriteView view) {
+	protected void saveAdditional(ValueOutput view) {
 
-		super.writeData(view);
+		super.saveAdditional(view);
 
-		view.put("foodBlockData", FoodBlockData.CODEC, this.foodBlockData);
+		view.store("foodBlockData", FoodBlockData.CODEC, this.foodBlockData);
 
 		if (this.recoveryTimer > 0) {
 			view.putInt("recoveryTimer", this.recoveryTimer);
 		} else {
-			view.remove("recoveryTimer");
+			view.discard("recoveryTimer");
 		}
 
 	}
 
 	@Override
-	protected void readData(ReadView view) {
+	protected void loadAdditional(ValueInput view) {
 
-		super.readData(view);
+		super.loadAdditional(view);
 
 		this.foodBlockData = view.read("foodBlockData", FoodBlockData.CODEC).orElse(FoodBlockData.DEFAULT);
 
-		this.recoveryTimer = view.getInt("recoveryTimer", 0);
+		this.recoveryTimer = view.getIntOr("recoveryTimer", 0);
 
 	}
 
-	public BlockEntityUpdateS2CPacket toUpdatePacket() {
-		return BlockEntityUpdateS2CPacket.create(this);
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
-		return this.createComponentlessNbt(registries);
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		return this.saveCustomOnly(registries);
 	}
 
-	public static void tick(World world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
-		if (!world.isClient() && world.getTime() % 20L == 0L && foodBlockEntity.foodBlockData.recovery_timer_threshold() > 0) {
+	public static void tick(Level world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
+		if (!world.isClientSide() && world.getGameTime() % 20L == 0L && foodBlockEntity.foodBlockData.recovery_timer_threshold() > 0) {
 			foodBlockEntity.recoveryTimer++;
 			if (foodBlockEntity.recoveryTimer >= foodBlockEntity.foodBlockData.recovery_timer_threshold()) {
 				foodBlockEntity.recoveryTimer = 0;
@@ -97,15 +97,15 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void readComponents(ComponentsAccess components) {
-		super.readComponents(components);
+	protected void applyImplicitComponents(DataComponentGetter components) {
+		super.applyImplicitComponents(components);
 		this.foodBlockData = components.getOrDefault(FoodOverhaul.FOOD_BLOCK_DATA, FoodBlockDataComponent.DEFAULT).food_block_data();
 	}
 
 	@Override
-	protected void addComponents(ComponentMap.Builder builder) {
-		super.addComponents(builder);
-		builder.add(FoodOverhaul.FOOD_BLOCK_DATA, new FoodBlockDataComponent(this.foodBlockData));
+	protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+		super.collectImplicitComponents(builder);
+		builder.set(FoodOverhaul.FOOD_BLOCK_DATA, new FoodBlockDataComponent(this.foodBlockData));
 	}
 
 	public record FoodBlockData(
@@ -156,36 +156,36 @@ public class FoodBlockEntity extends BlockEntity {
 						.apply(instance, FoodBlockData::new)
 		);
 
-		public static final PacketCodec<RegistryByteBuf, FoodBlockData> PACKET_CODEC = PacketCodec.of(FoodBlockData::write, FoodBlockData::new);
+		public static final StreamCodec<RegistryFriendlyByteBuf, FoodBlockData> PACKET_CODEC = StreamCodec.ofMember(FoodBlockData::write, FoodBlockData::new);
 
-		public FoodBlockData(RegistryByteBuf registryByteBuf) {
+		public FoodBlockData(RegistryFriendlyByteBuf registryByteBuf) {
 			this(
-					registryByteBuf.readString(),
+					registryByteBuf.readUtf(),
 					registryByteBuf.readInt(),
 					registryByteBuf.readInt(),
 					registryByteBuf.readBoolean(),
 					registryByteBuf.readBoolean(),
 					registryByteBuf.readBoolean(),
-					registryByteBuf.readString(),
-					registryByteBuf.readString(),
-					registryByteBuf.readString(),
-					registryByteBuf.readString(),
+					registryByteBuf.readUtf(),
+					registryByteBuf.readUtf(),
+					registryByteBuf.readUtf(),
+					registryByteBuf.readUtf(),
 					registryByteBuf.readInt(),
 					registryByteBuf.readBoolean()
 			);
 		}
 
-		public void write(RegistryByteBuf registryByteBuf) {
-			registryByteBuf.writeString(this.applied_status_effect_identifier);
+		public void write(RegistryFriendlyByteBuf registryByteBuf) {
+			registryByteBuf.writeUtf(this.applied_status_effect_identifier);
 			registryByteBuf.writeInt(this.applied_status_effect_duration);
 			registryByteBuf.writeInt(this.applied_status_effect_amplifier);
 			registryByteBuf.writeBoolean(this.applied_status_effect_ambient);
 			registryByteBuf.writeBoolean(this.applied_status_effect_show_particles);
 			registryByteBuf.writeBoolean(this.applied_status_effect_show_icon);
-			registryByteBuf.writeString(this.interaction_result_item_identifier);
-			registryByteBuf.writeString(this.interaction_tool_item_identifier);
-			registryByteBuf.writeString(this.use_preventing_status_effect_identifier);
-			registryByteBuf.writeString(this.required_advancement_identifier);
+			registryByteBuf.writeUtf(this.interaction_result_item_identifier);
+			registryByteBuf.writeUtf(this.interaction_tool_item_identifier);
+			registryByteBuf.writeUtf(this.use_preventing_status_effect_identifier);
+			registryByteBuf.writeUtf(this.required_advancement_identifier);
 			registryByteBuf.writeInt(this.recovery_timer_threshold);
 			registryByteBuf.writeBoolean(this.infinite_uses);
 		}

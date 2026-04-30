@@ -11,16 +11,16 @@ import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.github.theredbrain.foodoverhaul.registry.ServerPacketRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.component.ComponentType;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,35 +31,35 @@ public class FoodOverhaul implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ServerConfig SERVER_CONFIG;
 
-	public static RegistryEntry<EntityAttribute> MAX_FOOD_EFFECTS;
+	public static Holder<Attribute> MAX_FOOD_EFFECTS;
 
-	public static TagKey<StatusEffect> FOOD_EFFECTS = TagKey.of(RegistryKeys.STATUS_EFFECT, identifier("food_effects"));
+	public static TagKey<MobEffect> FOOD_EFFECTS = TagKey.create(Registries.MOB_EFFECT, identifier("food_effects"));
 
-	public static ComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA;
+	public static DataComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA;
 
-	public static ComponentType<FoodDisplayBlockDataComponent> FOOD_DISPLAY_BLOCK_DATA;
+	public static DataComponentType<FoodDisplayBlockDataComponent> FOOD_DISPLAY_BLOCK_DATA;
 
-	public static boolean tryEatOverhauledFood(PlayerEntity playerEntity, RegistryEntry<StatusEffect> statusEffectEntry) {
+	public static boolean tryEatOverhauledFood(Player playerEntity, Holder<MobEffect> statusEffectEntry) {
 		if (statusEffectEntry.value() instanceof RemoveFoodStatusEffect) {
 			return true;
-		} else if (statusEffectEntry.isIn(FoodOverhaul.FOOD_EFFECTS)) {
+		} else if (statusEffectEntry.is(FoodOverhaul.FOOD_EFFECTS)) {
 			int currentEatenFoods = 0;
-			Collection<StatusEffectInstance> collection = playerEntity.getStatusEffects();
-			for (StatusEffectInstance currentEffect : collection) {
-				if (currentEffect.getEffectType() == statusEffectEntry) {
-					if (currentEffect.isDurationBelow(FoodOverhaul.SERVER_CONFIG.food_effect_duration_threshold_to_allow_eating.get())) {
+			Collection<MobEffectInstance> collection = playerEntity.getActiveEffects();
+			for (MobEffectInstance currentEffect : collection) {
+				if (currentEffect.getEffect() == statusEffectEntry) {
+					if (currentEffect.endsWithin(FoodOverhaul.SERVER_CONFIG.food_effect_duration_threshold_to_allow_eating.get())) {
 						return true;
 					} else {
-						playerEntity.sendMessage(Text.translatable("hud.message.foodEatenAlready").append(Text.translatable(currentEffect.getTranslationKey())), true);
+						playerEntity.sendOverlayMessage(Component.translatable("hud.message.food_eaten_already").append(Component.translatable(currentEffect.getDescriptionId())));
 						return false;
 					}
-				} else if (currentEffect.getEffectType().isIn(FoodOverhaul.FOOD_EFFECTS)) {
+				} else if (currentEffect.getEffect().is(FoodOverhaul.FOOD_EFFECTS)) {
 					currentEatenFoods++;
 				}
 			}
 			boolean bl = currentEatenFoods < ((DuckPlayerEntityMixin) playerEntity).foodoverhaul$getMaxFoodEffects();
 			if (!bl) {
-				playerEntity.sendMessage(Text.translatable("hud.message.maxFoodEaten"), true);
+				playerEntity.sendOverlayMessage(Component.translatable("hud.message.max_food_eaten"));
 			}
 			return bl;
 		}
@@ -78,6 +78,6 @@ public class FoodOverhaul implements ModInitializer {
 	}
 
 	public static Identifier identifier(String path) {
-		return Identifier.of(MOD_ID, path);
+		return Identifier.fromNamespaceAndPath(MOD_ID, path);
 	}
 }

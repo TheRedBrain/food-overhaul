@@ -1,8 +1,8 @@
 {
 	"attribute.name.max_food_effects": "Max Food Effects",
 
-	"hud.message.foodEatenAlready": "You can't eat more ",
-	"hud.message.maxFoodEaten": "You are full.",
+	"hud.message.food_eaten_already": "You can't eat more ",
+	"hud.message.max_food_eaten": "You are full.",
 	"hud.message.food_block.update_successful": "Food Block Updated!",
 	"hud.message.food_display_block.update_successful": "Food Display Block Updated!",
 

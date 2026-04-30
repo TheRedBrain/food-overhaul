@@ -11,10 +11,10 @@ public class ServerPacketRegistry {
 
 	public static void init() {
 
-		PayloadTypeRegistry.playC2S().register(UpdateFoodBlockPacket.PACKET_ID, UpdateFoodBlockPacket.PACKET_CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(UpdateFoodBlockPacket.PACKET_ID, UpdateFoodBlockPacket.PACKET_CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(UpdateFoodBlockPacket.PACKET_ID, new UpdateFoodBlockPacketReceiver());
 
-		PayloadTypeRegistry.playC2S().register(UpdateFoodDisplayBlockPacket.PACKET_ID, UpdateFoodDisplayBlockPacket.PACKET_CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(UpdateFoodDisplayBlockPacket.PACKET_ID, UpdateFoodDisplayBlockPacket.PACKET_CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(UpdateFoodDisplayBlockPacket.PACKET_ID, new UpdateFoodDisplayBlockPacketReceiver());
 
 	}

@@ -3,149 +3,149 @@ package com.github.theredbrain.foodoverhaul.block;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class FoodDisplayBlock extends BlockWithEntity {
-	public static final MapCodec<FoodDisplayBlock> CODEC = createCodec(FoodDisplayBlock::new);
+public class FoodDisplayBlock extends BaseEntityBlock {
+	public static final MapCodec<FoodDisplayBlock> CODEC = simpleCodec(FoodDisplayBlock::new);
 
-	public static final BooleanProperty IS_EMPTY = BooleanProperty.of("is_empty");
+	public static final BooleanProperty IS_EMPTY = BooleanProperty.create("is_empty");
 
 	protected static final VoxelShape SHAPE;
 
 	@Override
-	protected MapCodec<? extends FoodDisplayBlock> getCodec() {
+	protected MapCodec<? extends FoodDisplayBlock> codec() {
 		return CODEC;
 	}
 
-	public FoodDisplayBlock(Settings settings) {
+	public FoodDisplayBlock(Properties settings) {
 		super(settings);
-		this.setDefaultState(this.stateManager.getDefaultState().with(IS_EMPTY, true));
+		this.registerDefaultState(this.stateDefinition.any().setValue(IS_EMPTY, true));
 	}
 
 	@Nullable
 	@Override
-	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new FoodDisplayBlockEntity(pos, state);
 	}
 
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		super.appendProperties(builder);
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		super.createBlockStateDefinition(builder);
 		builder.add(IS_EMPTY);
 	}
 
 	@Override
-	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.MODEL;
+	public RenderShape getRenderShape(BlockState state) {
+		return RenderShape.MODEL;
 	}
 
 	@Override
-	public VoxelShape getOutlineShape(BlockState state, BlockView level, BlockPos pos, ShapeContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return SHAPE;
 	}
 
 	@Override
-	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+	protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock) {
 			int index;
 			if (foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode()) {
 				index = 0;
 			} else {
-				index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+				index = FoodDisplayBlockEntity.getIndex(hit.getLocation(), pos);
 			}
 			boolean canPlayerModify = foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player);
 
-			if (player.isSneaking() && canPlayerModify) {
+			if (player.isShiftKeyDown() && canPlayerModify) {
 
 				if (!foodDisplayBlockEntity.getDisplayedItems().get(index).isEmpty()) {
 					return foodDisplayBlockEntity.rotateItem(index);
 				} else if (player.isCreative()) {
 					((DuckPlayerEntityMixin) player).foodoverhaul$openFoodDisplayBlockScreen(foodDisplayBlockEntity);
-					return ActionResult.SUCCESS;
+					return InteractionResult.SUCCESS;
 				}
 			} else if (foodDisplayBlock.canPlayerEat(world, pos, state, foodDisplayBlockEntity, player)) {
 				return foodDisplayBlockEntity.consumeItem(world, player, index);
 
 			}
-			return ActionResult.FAIL;
+			return InteractionResult.FAIL;
 		}
-		return super.onUse(state, world, pos, player, hit);
+		return super.useWithoutItem(state, world, pos, player, hit);
 	}
 
 	@Override
-	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 		if (world.getBlockEntity(pos) instanceof FoodDisplayBlockEntity foodDisplayBlockEntity && state.getBlock() instanceof FoodDisplayBlock foodDisplayBlock && foodDisplayBlock.canPlayerModify(world, pos, state, foodDisplayBlockEntity, player)) {
-			ActionResult result;
+			InteractionResult result;
 			String viableItemsTagIdentifier = foodDisplayBlockEntity.getFoodDisplayBlockData().viable_items_tag_identifier();
-			if (viableItemsTagIdentifier.isEmpty() || stack.isIn(TagKey.of(RegistryKeys.ITEM, Identifier.of(viableItemsTagIdentifier)))) {
+			if (viableItemsTagIdentifier.isEmpty() || stack.is(TagKey.create(Registries.ITEM, Identifier.parse(viableItemsTagIdentifier)))) {
 				if (foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode()) {
 					result = foodDisplayBlockEntity.addNewItem(world, stack, player, 0);
 				} else {
-					int index = FoodDisplayBlockEntity.getIndex(hit.getPos(), pos);
+					int index = FoodDisplayBlockEntity.getIndex(hit.getLocation(), pos);
 					result = foodDisplayBlockEntity.addNewItem(world, stack, player, index);
 				}
-				if (result.isAccepted()) {
-					return ActionResult.SUCCESS;
+				if (result.consumesAction()) {
+					return InteractionResult.SUCCESS;
 				}
 			}
 		}
 
-		return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+		return InteractionResult.TRY_WITH_EMPTY_HAND;
 	}
 
-	protected boolean canPlayerModify(WorldAccess world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, PlayerEntity player) {
+	protected boolean canPlayerModify(LevelAccessor world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, Player player) {
 		boolean canPlayerInteract = true;
 		String enableModificationStatusEffectIdentifier = foodDisplayBlockEntity.getFoodDisplayBlockData().enables_modification_status_effect_identifier();
 		if (!enableModificationStatusEffectIdentifier.isEmpty()) {
-			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(enableModificationStatusEffectIdentifier));
+			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(enableModificationStatusEffectIdentifier));
 			if (optional_status_effect.isPresent()) {
-				canPlayerInteract = player.hasStatusEffect(optional_status_effect.get());
+				canPlayerInteract = player.hasEffect(optional_status_effect.get());
 			}
 		}
 		return canPlayerInteract || player.isCreative();
 	}
 
-	protected boolean canPlayerEat(WorldAccess world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, PlayerEntity player) {
+	protected boolean canPlayerEat(LevelAccessor world, BlockPos pos, BlockState state, FoodDisplayBlockEntity foodDisplayBlockEntity, Player player) {
 		boolean canPlayerInteract = true;
 		String usePreventingStatusEffectIdentifier = foodDisplayBlockEntity.getFoodDisplayBlockData().use_preventing_status_effect_identifier();
 		if (!usePreventingStatusEffectIdentifier.isEmpty()) {
-			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(usePreventingStatusEffectIdentifier));
+			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(usePreventingStatusEffectIdentifier));
 			if (optional_status_effect.isPresent()) {
-				canPlayerInteract = !player.hasStatusEffect(optional_status_effect.get());
+				canPlayerInteract = !player.hasEffect(optional_status_effect.get());
 			}
 		}
 		return canPlayerInteract;
 	}
 
 	static {
-		SHAPE = Block.createCuboidShape(1.0, 0.0, 1.0, 15.0, 1.0, 15.0);
+		SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 1.0, 15.0);
 	}
 
 }

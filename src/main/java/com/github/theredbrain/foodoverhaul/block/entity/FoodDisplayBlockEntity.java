@@ -7,31 +7,31 @@ import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentsAccess;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 public class FoodDisplayBlockEntity extends BlockEntity {
 
-	private final DefaultedList<ItemStack> displayedItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
+	private final NonNullList<ItemStack> displayedItems = NonNullList.withSize(4, ItemStack.EMPTY);
 
 	private FoodDisplayBlockData foodDisplayBlockData = FoodDisplayBlockData.DEFAULT;
 
@@ -40,58 +40,58 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void writeData(WriteView view) {
+	protected void saveAdditional(ValueOutput view) {
 
-		super.writeData(view);
+		super.saveAdditional(view);
 
-		Inventories.writeData(view, this.displayedItems, true);
+		ContainerHelper.saveAllItems(view, this.displayedItems, true);
 
-		view.put("foodDisplayBlockData", FoodDisplayBlockData.CODEC, this.foodDisplayBlockData);
+		view.store("foodDisplayBlockData", FoodDisplayBlockData.CODEC, this.foodDisplayBlockData);
 
 	}
 
 	@Override
-	protected void readData(ReadView view) {
+	protected void loadAdditional(ValueInput view) {
 
-		super.readData(view);
+		super.loadAdditional(view);
 
 		this.displayedItems.clear();
-		Inventories.readData(view, this.displayedItems);
+		ContainerHelper.loadAllItems(view, this.displayedItems);
 
 		this.foodDisplayBlockData = view.read("foodDisplayBlockData", FoodDisplayBlockData.CODEC).orElse(FoodDisplayBlockData.DEFAULT);
 
 	}
 
 	@Override
-	public BlockEntityUpdateS2CPacket toUpdatePacket() {
-		return BlockEntityUpdateS2CPacket.create(this);
+	public ClientboundBlockEntityDataPacket getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-		return this.createComponentlessNbt(registryLookup);
+	public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+		return this.saveCustomOnly(registryLookup);
 	}
 
 	@Override
-	public void onBlockReplaced(BlockPos pos, BlockState oldState) {
-		if (this.world != null) {
-			ItemScatterer.spawn(this.world, pos, this.getDisplayedItems());
+	public void preRemoveSideEffects(BlockPos pos, BlockState oldState) {
+		if (this.level != null) {
+			Containers.dropContents(this.level, pos, this.getDisplayedItems());
 		}
 	}
 
-	public ActionResult rotateItem(int index) {
-		if (this.getWorld() != null) {
+	public InteractionResult rotateItem(int index) {
+		if (this.getLevel() != null) {
 			int[] newRotations = this.foodDisplayBlockData.getRotations();
 			newRotations[index] = newRotations[index] + 1;
 			this.setFoodDisplayBlockData(new FoodDisplayBlockData.Builder(this.foodDisplayBlockData).rotations(newRotations[0], newRotations[1], newRotations[2], newRotations[3]).build());
-			this.markDirty();
-			this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
-			return ActionResult.SUCCESS;
+			this.setChanged();
+			this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_ALL);
+			return InteractionResult.SUCCESS;
 		}
-		return ActionResult.PASS;
+		return InteractionResult.PASS;
 	}
 
-	public static int getIndex(Vec3d hitPos, BlockPos blockPos) {
+	public static int getIndex(Vec3 hitPos, BlockPos blockPos) {
 		boolean xPositive = hitPos.x - blockPos.getX() > 0.5;
 		boolean zPositive = hitPos.z - blockPos.getZ() > 0.5;
 		int index;
@@ -107,61 +107,61 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		return index;
 	}
 
-	public ActionResult consumeItem(World world, PlayerEntity player, int index) {
+	public InteractionResult consumeItem(Level world, Player player, int index) {
 		ItemStack consumedStack = this.displayedItems.get(index).copy();
 		if (!consumedStack.isEmpty()) {
 
-			if (player.getStackInHand(player.getActiveHand()).isEmpty()) {
+			if (player.getItemInHand(player.getUsedItemHand()).isEmpty()) {
 
 				if (((DuckPlayerEntityMixin) player).foodoverhaul$canConsumeItem(consumedStack)) {
-					ItemStack remainingStack = consumedStack.finishUsing(player.getEntityWorld(), player);
+					ItemStack remainingStack = consumedStack.finishUsingItem(player.level(), player);
 
 					if (!this.foodDisplayBlockData.infinite_uses) {
 						this.displayedItems.set(index, remainingStack);
-						BlockState oldState = world.getBlockState(pos);
+						BlockState oldState = world.getBlockState(worldPosition);
 						BlockState newState = this.updateEmptyState(oldState);
-						this.markDirty();
-						world.setBlockState(pos, newState, Block.NOTIFY_ALL);
+						this.setChanged();
+						world.setBlock(worldPosition, newState, Block.UPDATE_ALL);
 					}
-					return ActionResult.SUCCESS;
+					return InteractionResult.SUCCESS;
 				}
 			} else {
 				if (!player.isCreative()) {
-					player.getInventory().offerOrDrop(consumedStack);
+					player.getInventory().placeItemBackInInventory(consumedStack);
 				}
 				if (!this.foodDisplayBlockData.infinite_uses) {
 					this.displayedItems.set(index, ItemStack.EMPTY);
-					BlockState oldState = world.getBlockState(pos);
+					BlockState oldState = world.getBlockState(worldPosition);
 					BlockState newState = this.updateEmptyState(oldState);
-					this.markDirty();
-					world.setBlockState(pos, newState, Block.NOTIFY_ALL);
+					this.setChanged();
+					world.setBlock(worldPosition, newState, Block.UPDATE_ALL);
 				}
-				return ActionResult.SUCCESS;
+				return InteractionResult.SUCCESS;
 			}
 		}
-		return ActionResult.PASS;
+		return InteractionResult.PASS;
 	}
 
-	public ActionResult addNewItem(World world, ItemStack itemStack, PlayerEntity player, int index) {
-		BlockState oldState = world.getBlockState(this.pos);
+	public InteractionResult addNewItem(Level world, ItemStack itemStack, Player player, int index) {
+		BlockState oldState = world.getBlockState(this.worldPosition);
 
 		if (this.displayedItems.get(index).isEmpty() && !itemStack.isEmpty()) {
-			this.displayedItems.set(index, itemStack.splitUnlessCreative(1, player));
+			this.displayedItems.set(index, itemStack.consumeAndReturn(1, player));
 			BlockState newState = this.updateEmptyState(oldState);
-			this.markDirty();
-			world.setBlockState(this.pos, newState, Block.NOTIFY_ALL);
-			return ActionResult.SUCCESS;
+			this.setChanged();
+			world.setBlock(this.worldPosition, newState, Block.UPDATE_ALL);
+			return InteractionResult.SUCCESS;
 		}
-		return ActionResult.FAIL;
+		return InteractionResult.FAIL;
 	}
 
 	public BlockState updateEmptyState(BlockState oldState) {
 		for (int i = 0; i < 4; i++) {
 			if (!this.displayedItems.get(i).isEmpty()) {
-				return oldState.with(FoodDisplayBlock.IS_EMPTY, false);
+				return oldState.setValue(FoodDisplayBlock.IS_EMPTY, false);
 			}
 		}
-		return oldState.with(FoodDisplayBlock.IS_EMPTY, true);
+		return oldState.setValue(FoodDisplayBlock.IS_EMPTY, true);
 	}
 
 	public FoodDisplayBlockData getFoodDisplayBlockData() {
@@ -171,28 +171,28 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	public void setFoodDisplayBlockData(FoodDisplayBlockData foodDisplayBlockData) {
 		this.foodDisplayBlockData = foodDisplayBlockData;
 		if (this.foodDisplayBlockData.single_item_mode) {
-			if (this.world != null) {
+			if (this.level != null) {
 				for (int i = 1; i < 4; i++) {
-					ItemScatterer.spawn(this.world, pos.getX(), pos.getY(), pos.getZ(), this.getDisplayedItems().get(i));
+					Containers.dropItemStack(this.level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), this.getDisplayedItems().get(i));
 				}
 			}
 		}
 	}
 
-	public DefaultedList<ItemStack> getDisplayedItems() {
+	public NonNullList<ItemStack> getDisplayedItems() {
 		return this.displayedItems;
 	}
 
 	@Override
-	protected void readComponents(ComponentsAccess components) {
-		super.readComponents(components);
+	protected void applyImplicitComponents(DataComponentGetter components) {
+		super.applyImplicitComponents(components);
 		this.foodDisplayBlockData = components.getOrDefault(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, FoodDisplayBlockDataComponent.DEFAULT).food_display_block_data();
 	}
 
 	@Override
-	protected void addComponents(ComponentMap.Builder builder) {
-		super.addComponents(builder);
-		builder.add(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, new FoodDisplayBlockDataComponent(this.foodDisplayBlockData));
+	protected void collectImplicitComponents(DataComponentMap.Builder builder) {
+		super.collectImplicitComponents(builder);
+		builder.set(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, new FoodDisplayBlockDataComponent(this.foodDisplayBlockData));
 	}
 
 	public record FoodDisplayBlockData(
@@ -234,13 +234,13 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 						.apply(instance, FoodDisplayBlockData::new)
 		);
 
-		public static final PacketCodec<RegistryByteBuf, FoodDisplayBlockData> PACKET_CODEC = PacketCodec.of(FoodDisplayBlockData::write, FoodDisplayBlockData::new);
+		public static final StreamCodec<RegistryFriendlyByteBuf, FoodDisplayBlockData> PACKET_CODEC = StreamCodec.ofMember(FoodDisplayBlockData::write, FoodDisplayBlockData::new);
 
-		public FoodDisplayBlockData(RegistryByteBuf registryByteBuf) {
+		public FoodDisplayBlockData(RegistryFriendlyByteBuf registryByteBuf) {
 			this(
-					registryByteBuf.readString(),
-					registryByteBuf.readString(),
-					registryByteBuf.readString(),
+					registryByteBuf.readUtf(),
+					registryByteBuf.readUtf(),
+					registryByteBuf.readUtf(),
 					registryByteBuf.readBoolean(),
 					registryByteBuf.readInt(),
 					registryByteBuf.readInt(),
@@ -250,10 +250,10 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 			);
 		}
 
-		public void write(RegistryByteBuf registryByteBuf) {
-			registryByteBuf.writeString(this.use_preventing_status_effect_identifier);
-			registryByteBuf.writeString(this.enables_modification_status_effect_identifier);
-			registryByteBuf.writeString(this.viable_items_tag_identifier);
+		public void write(RegistryFriendlyByteBuf registryByteBuf) {
+			registryByteBuf.writeUtf(this.use_preventing_status_effect_identifier);
+			registryByteBuf.writeUtf(this.enables_modification_status_effect_identifier);
+			registryByteBuf.writeUtf(this.viable_items_tag_identifier);
 			registryByteBuf.writeBoolean(this.single_item_mode);
 			registryByteBuf.writeInt(this.rotation_1 % 16);
 			registryByteBuf.writeInt(this.rotation_2 % 16);
@@ -289,7 +289,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 				this.infinite_uses = base.infinite_uses;
 			}
 
-			public FoodDisplayBlockData.Builder rotations(int rotation_1, int rotation_2, int rotation_3, int rotation_4) {
+			public Builder rotations(int rotation_1, int rotation_2, int rotation_3, int rotation_4) {
 				this.rotation_1 = rotation_1 % 16;
 				this.rotation_2 = rotation_2 % 16;
 				this.rotation_3 = rotation_3 % 16;

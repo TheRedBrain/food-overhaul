@@ -1,11 +1,11 @@
 package com.github.theredbrain.foodoverhaul.entity.effect;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class FoodStatusEffect extends StatusEffect {
+public class FoodStatusEffect extends MobEffect {
 
 	public FoodStatusEffect() {
-		super(StatusEffectCategory.BENEFICIAL, 16262179);
+		super(MobEffectCategory.BENEFICIAL, 16262179);
 	}
 }

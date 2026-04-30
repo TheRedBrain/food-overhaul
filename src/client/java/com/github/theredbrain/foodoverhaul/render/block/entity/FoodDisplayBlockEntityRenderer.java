@@ -2,85 +2,87 @@ package com.github.theredbrain.foodoverhaul.render.block.entity;
 
 import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
 import com.github.theredbrain.foodoverhaul.render.block.entity.state.FoodDisplayBlockEntityRendererState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.item.ItemModelManager;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.command.ModelCommandRenderer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.item.ItemRenderState;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.HeldItemContext;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.entity.ItemOwner;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class FoodDisplayBlockEntityRenderer implements BlockEntityRenderer<FoodDisplayBlockEntity, FoodDisplayBlockEntityRendererState> {
-	private final ItemModelManager itemModelManager;
+	private final ItemModelResolver itemModelManager;
 
-	public FoodDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
-		this.itemModelManager = ctx.itemModelManager();
+	public FoodDisplayBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+		this.itemModelManager = ctx.itemModelResolver();
 	}
 
 	public FoodDisplayBlockEntityRendererState createRenderState() {
 		return new FoodDisplayBlockEntityRendererState();
 	}
 
-	public void updateRenderState(FoodDisplayBlockEntity foodDisplayBlockEntity, FoodDisplayBlockEntityRendererState foodDisplayBlockEntityRendererState, float f, Vec3d vec3d, @Nullable ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlayCommand) {
-		BlockEntityRenderer.super.updateRenderState(foodDisplayBlockEntity, foodDisplayBlockEntityRendererState, f, vec3d, crumblingOverlayCommand);
-		int i = (int) foodDisplayBlockEntity.getPos().asLong();
-		foodDisplayBlockEntityRendererState.displayedItemStates = new ArrayList<>();
+	@Override
+	public void extractRenderState(final FoodDisplayBlockEntity blockEntity, final FoodDisplayBlockEntityRendererState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+		BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+		int i = (int) blockEntity.getBlockPos().asLong();
+		state.displayedItemStates = new ArrayList<>();
 
-		for (int j = 0; j < foodDisplayBlockEntity.getDisplayedItems().size(); ++j) {
-			ItemRenderState itemRenderState = new ItemRenderState();
-			this.itemModelManager.clearAndUpdate(itemRenderState, (ItemStack) foodDisplayBlockEntity.getDisplayedItems().get(j), ItemDisplayContext.FIXED, foodDisplayBlockEntity.getWorld(), (HeldItemContext) null, i + j);
-			foodDisplayBlockEntityRendererState.displayedItemStates.add(itemRenderState);
+		for (int j = 0; j < blockEntity.getDisplayedItems().size(); ++j) {
+			ItemStackRenderState itemRenderState = new ItemStackRenderState();
+			this.itemModelManager.updateForTopItem(itemRenderState, (ItemStack) blockEntity.getDisplayedItems().get(j), ItemDisplayContext.FIXED, blockEntity.getLevel(), (ItemOwner) null, i + j);
+			state.displayedItemStates.add(itemRenderState);
 		}
 
-		foodDisplayBlockEntityRendererState.singleItemMode = foodDisplayBlockEntity.getFoodDisplayBlockData().single_item_mode();
+		state.singleItemMode = blockEntity.getFoodDisplayBlockData().single_item_mode();
 
-		foodDisplayBlockEntityRendererState.displayedItemRotations = foodDisplayBlockEntity.getFoodDisplayBlockData().getRotations();
+		state.displayedItemRotations = blockEntity.getFoodDisplayBlockData().getRotations();
 	}
 
-	public void render(FoodDisplayBlockEntityRendererState foodDisplayBlockEntityRenderState, MatrixStack matrixStack, OrderedRenderCommandQueue orderedRenderCommandQueue, CameraRenderState cameraRenderState) {
-		List<ItemRenderState> list = foodDisplayBlockEntityRenderState.displayedItemStates;
-		int[] itemDisplayRotations = foodDisplayBlockEntityRenderState.displayedItemRotations;
+	@Override
+	public void submit(final FoodDisplayBlockEntityRendererState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+		List<ItemStackRenderState> list = state.displayedItemStates;
+		int[] itemDisplayRotations = state.displayedItemRotations;
 
-		if (foodDisplayBlockEntityRenderState.singleItemMode) {
-			ItemRenderState itemRenderState = (ItemRenderState) list.get(0);
+		if (state.singleItemMode && !list.isEmpty()) {
+			ItemStackRenderState itemRenderState = (ItemStackRenderState) list.getFirst();
 			if (!itemRenderState.isEmpty()) {
-				matrixStack.push();
-				matrixStack.translate(0.5F, 0.25F, 0.5F);
-				matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(itemDisplayRotations[0] * -22.5F));
-				itemRenderState.render(matrixStack, orderedRenderCommandQueue, foodDisplayBlockEntityRenderState.lightmapCoordinates, OverlayTexture.DEFAULT_UV, 0);
-				matrixStack.pop();
+				poseStack.pushPose();
+				poseStack.translate(0.5F, 0.25F, 0.5F);
+				poseStack.mulPose(Axis.YP.rotationDegrees(itemDisplayRotations[0] * -22.5F));
+				itemRenderState.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+				poseStack.popPose();
 			}
 		} else {
 			for (int i = 0; i < list.size(); ++i) {
-				ItemRenderState itemRenderState = (ItemRenderState) list.get(i);
+				ItemStackRenderState itemRenderState = (ItemStackRenderState) list.get(i);
 				if (!itemRenderState.isEmpty()) {
-					matrixStack.push();
+					poseStack.pushPose();
 					if (i == 0) {
-						matrixStack.translate(0.25F, 0.25F, 0.75F);
+						poseStack.translate(0.25F, 0.25F, 0.75F);
 					} else if (i == 1) {
-						matrixStack.translate(0.25F, 0.25F, 0.25F);
+						poseStack.translate(0.25F, 0.25F, 0.25F);
 					} else if (i == 2) {
-						matrixStack.translate(0.75F, 0.25F, 0.25F);
+						poseStack.translate(0.75F, 0.25F, 0.25F);
 					} else if (i == 3) {
-						matrixStack.translate(0.75F, 0.25F, 0.75F);
+						poseStack.translate(0.75F, 0.25F, 0.75F);
 					}
-					matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(itemDisplayRotations[i] * -22.5F));
-					itemRenderState.render(matrixStack, orderedRenderCommandQueue, foodDisplayBlockEntityRenderState.lightmapCoordinates, OverlayTexture.DEFAULT_UV, 0);
-					matrixStack.pop();
+					poseStack.mulPose(Axis.YP.rotationDegrees(itemDisplayRotations[i] * -22.5F));
+					itemRenderState.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+					poseStack.popPose();
 				}
 			}
 		}

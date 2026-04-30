@@ -5,111 +5,111 @@ import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.ServerAdvancementLoader;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.Stats;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
-import net.minecraft.world.tick.ScheduledTickView;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.ServerAdvancementManager;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
-public class GenericFoodBlock extends BlockWithEntity {
-	public static final MapCodec<GenericFoodBlock> CODEC = createCodec(GenericFoodBlock::new);
+public class GenericFoodBlock extends BaseEntityBlock {
+	public static final MapCodec<GenericFoodBlock> CODEC = simpleCodec(GenericFoodBlock::new);
 
 	public static final Property<Direction> FACING;
 
 	@Override
-	protected MapCodec<? extends GenericFoodBlock> getCodec() {
+	protected MapCodec<? extends GenericFoodBlock> codec() {
 		return CODEC;
 	}
 
-	public GenericFoodBlock(Settings settings) {
+	public GenericFoodBlock(Properties settings) {
 		super(settings);
 	}
 
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		super.appendProperties(builder);
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		super.createBlockStateDefinition(builder);
 		builder.add(FACING);
 	}
 
 	@Nullable
 	@Override
-	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new FoodBlockEntity(pos, state);
 	}
 
 	@Override
-	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.MODEL;
+	public RenderShape getRenderShape(BlockState state) {
+		return RenderShape.MODEL;
 	}
 
 	@Override
 	@Nullable
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return validateTicker(type, EntityRegistry.FOOD_BLOCK_ENTITY, FoodBlockEntity::tick);
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+		return createTickerHelper(type, EntityRegistry.FOOD_BLOCK_ENTITY, FoodBlockEntity::tick);
 	}
 
 	@Override
-	protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+	protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
-			if (/*FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && */player.isCreative() && player.isSneaking()) {
+			if (/*FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && */player.isCreative() && player.isShiftKeyDown()) {
 				((DuckPlayerEntityMixin) player).foodoverhaul$openFoodBlockScreen(foodBlockEntity);
-				return ActionResult.SUCCESS;
+				return InteractionResult.SUCCESS;
 			} else if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
-				if (world.isClient()) {
-					if (tryEat(world, pos, state, player, foodBlockEntity).isAccepted()) {
-						return ActionResult.SUCCESS;
+				if (world.isClientSide()) {
+					if (tryEat(world, pos, state, player, foodBlockEntity).consumesAction()) {
+						return InteractionResult.SUCCESS;
 					}
 
-					if (player.getStackInHand(Hand.MAIN_HAND).isEmpty()) {
-						return ActionResult.CONSUME;
+					if (player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
+						return InteractionResult.CONSUME;
 					}
 				}
 
 				return tryEat(world, pos, state, player, foodBlockEntity);
 			}
 		}
-		return super.onUse(state, world, pos, player, hit);
+		return super.useWithoutItem(state, world, pos, player, hit);
 	}
 
 	@Override
-	protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 
@@ -117,7 +117,7 @@ public class GenericFoodBlock extends BlockWithEntity {
 
 			if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
 
-				Item interactionResultItem = Registries.ITEM.get(Identifier.of(foodBlockData.interaction_result_item_identifier()));
+				Item interactionResultItem = BuiltInRegistries.ITEM.getValue(Identifier.parse(foodBlockData.interaction_result_item_identifier()));
 
 				if (interactionResultItem != Items.AIR) {
 					Item interactionToolItem = Items.AIR;
@@ -125,47 +125,47 @@ public class GenericFoodBlock extends BlockWithEntity {
 					String interaction_tool_item_identifier = foodBlockData.interaction_tool_item_identifier();
 					if (interaction_tool_item_identifier.startsWith("#")) {
 						String tagIdentifier = interaction_tool_item_identifier.replaceFirst("#", "");
-						tag = TagKey.of(RegistryKeys.ITEM, Identifier.of(tagIdentifier));
+						tag = TagKey.create(Registries.ITEM, Identifier.parse(tagIdentifier));
 					} else {
-						interactionToolItem = Registries.ITEM.get(Identifier.of(interaction_tool_item_identifier));
+						interactionToolItem = BuiltInRegistries.ITEM.getValue(Identifier.parse(interaction_tool_item_identifier));
 					}
 
-					if ((interactionToolItem != Items.AIR && stack.isOf(interactionToolItem)) || (tag != null && stack.isIn(tag))) {
-						if (stack.getMaxCount() == 1) {
+					if ((interactionToolItem != Items.AIR && stack.is(interactionToolItem)) || (tag != null && stack.is(tag))) {
+						if (stack.getMaxStackSize() == 1) {
 //							world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F); // TODO custom id
-							stack.damage(1, player, hand.getEquipmentSlot());
+							stack.hurtAndBreak(1, player, hand.asEquipmentSlot());
 //							world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos); // TODO custom id
 						} else {
 
 							if (!player.isCreative()) {
-								stack.decrement(1);
+								stack.shrink(1);
 							}
 //							world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F); // TODO custom id
-							player.setStackInHand(hand, stack.isEmpty() ? ItemStack.EMPTY : stack);
+							player.setItemInHand(hand, stack.isEmpty() ? ItemStack.EMPTY : stack);
 //							world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos); // TODO custom id
 						}
-						player.getInventory().offerOrDrop(interactionResultItem.getDefaultStack());
-						if (!world.isClient()) {
-							player.incrementStat(Stats.USED.getOrCreateStat(interactionToolItem));
+						player.getInventory().placeItemBackInInventory(interactionResultItem.getDefaultInstance());
+						if (!world.isClientSide()) {
+							player.awardStat(Stats.ITEM_USED.get(interactionToolItem));
 						}
 						this.onSuccessfulItemInteraction(world, pos, state, foodBlockEntity, player);
-						return ActionResult.SUCCESS;
+						return InteractionResult.SUCCESS;
 					}
 				}
 			}
 		}
-		return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+		return super.useItemOn(stack, state, world, pos, player, hand, hit);
 	}
 
-	protected static ActionResult tryEat(WorldAccess world, BlockPos pos, BlockState state, PlayerEntity player, FoodBlockEntity foodBlockEntity) {
+	protected static InteractionResult tryEat(LevelAccessor world, BlockPos pos, BlockState state, Player player, FoodBlockEntity foodBlockEntity) {
 		if (state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 			FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
-			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(foodBlockData.applied_status_effect_identifier()));
+			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(foodBlockData.applied_status_effect_identifier()));
 			if (optional_status_effect.isPresent()) {
 				if (FoodOverhaul.tryEatOverhauledFood(player, optional_status_effect.get())) {
-					if (!world.isClient()) {
+					if (!world.isClientSide()) {
 						foodBlockEntity.setRecoveryTimer(0);
-						player.addStatusEffect(new StatusEffectInstance(
+						player.addEffect(new MobEffectInstance(
 								optional_status_effect.get(),
 								foodBlockData.applied_status_effect_duration(),
 								foodBlockData.applied_status_effect_amplifier(),
@@ -175,75 +175,75 @@ public class GenericFoodBlock extends BlockWithEntity {
 						));
 					}
 					genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
-					return ActionResult.SUCCESS_SERVER;
+					return InteractionResult.SUCCESS_SERVER;
 				}
 			}
 		}
-		return ActionResult.PASS;
+		return InteractionResult.PASS;
 	}
 
-	protected boolean canPlayerInteract(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
+	protected boolean canPlayerInteract(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 		boolean canPlayerInteract = true;
 		FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
 		String usePreventingStatusEffectIdentifier = foodBlockData.use_preventing_status_effect_identifier();
 		if (!usePreventingStatusEffectIdentifier.isEmpty()) {
-			Optional<RegistryEntry.Reference<StatusEffect>> optional_status_effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(usePreventingStatusEffectIdentifier));
+			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(usePreventingStatusEffectIdentifier));
 			if (optional_status_effect.isPresent()) {
-				canPlayerInteract = !player.hasStatusEffect(optional_status_effect.get());
+				canPlayerInteract = !player.hasEffect(optional_status_effect.get());
 			}
 		}
 		String requiredAdvancementIdentifier = foodBlockData.required_advancement_identifier();
-		if (canPlayerInteract && !requiredAdvancementIdentifier.isEmpty() && world.getServer() != null && player instanceof ServerPlayerEntity serverPlayerEntity) {
-			ServerAdvancementLoader advancementLoader = world.getServer().getAdvancementLoader();
-			AdvancementEntry advancementEntry = advancementLoader.get(Identifier.of(usePreventingStatusEffectIdentifier));
+		if (canPlayerInteract && !requiredAdvancementIdentifier.isEmpty() && world.getServer() != null && player instanceof ServerPlayer serverPlayerEntity) {
+			ServerAdvancementManager advancementLoader = world.getServer().getAdvancements();
+			AdvancementHolder advancementEntry = advancementLoader.get(Identifier.parse(usePreventingStatusEffectIdentifier));
 			if (advancementEntry != null) {
-				canPlayerInteract = serverPlayerEntity.getAdvancementTracker().getProgress(advancementEntry).isDone();
+				canPlayerInteract = serverPlayerEntity.getAdvancements().getOrStartProgress(advancementEntry).isDone();
 			}
 		}
 		return canPlayerInteract;
 	}
 
-	protected void onSuccessfulInteraction(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
+	protected void onSuccessfulInteraction(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 	}
 
-	protected void onSuccessfulItemInteraction(WorldAccess world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, PlayerEntity player) {
+	protected void onSuccessfulItemInteraction(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 	}
 
-	public static void recoveryTick(World world, BlockPos pos, BlockState state) {
+	public static void recoveryTick(Level world, BlockPos pos, BlockState state) {
 		if (state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 			genericFoodBlock.onRecoveryTick(world, pos, state);
 		}
 	}
 
-	protected void onRecoveryTick(World world, BlockPos pos, BlockState state) {
+	protected void onRecoveryTick(Level world, BlockPos pos, BlockState state) {
 	}
 
 	@Override
-	public BlockState getPlacementState(ItemPlacementContext context) {
-		return this.getDefaultState().with(FACING, context.getHorizontalPlayerFacing());
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
+		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection());
 	}
 
 	@Override
-	protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
-		return direction == Direction.DOWN && !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+	protected BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+		return direction == Direction.DOWN && !state.canSurvive(world, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, world, tickView, pos, direction, neighborPos, neighborState, random);
 	}
 
 	@Override
-	protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		return world.getBlockState(pos.down()).isSolid();
+	protected boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+		return world.getBlockState(pos.below()).isSolid();
 	}
 
 	@Override
-	protected boolean hasComparatorOutput(BlockState state) {
+	protected boolean hasAnalogOutputSignal(BlockState state) {
 		return true;
 	}
 
 	@Override
-	protected boolean canPathfindThrough(BlockState state, NavigationType type) {
+	protected boolean isPathfindable(BlockState state, PathComputationType type) {
 		return false;
 	}
 
 	static {
-		FACING = Properties.HORIZONTAL_FACING;
+		FACING = BlockStateProperties.HORIZONTAL_FACING;
 	}
 }
