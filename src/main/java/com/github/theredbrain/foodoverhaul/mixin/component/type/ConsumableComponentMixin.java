@@ -1,7 +1,7 @@
 package com.github.theredbrain.foodoverhaul.mixin.component.type;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
-import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import org.spongepowered.asm.mixin.Final;
@@ -39,7 +39,7 @@ public class ConsumableComponentMixin {
 			}
 		}
 		if (appliesFoodEffect && user instanceof Player playerEntity) {
-			canConsume = ((DuckPlayerEntityMixin) playerEntity).foodoverhaul$canConsumeItem(stack);
+			canConsume = PlayerHelper.canConsumeItem(playerEntity, stack);
 		}
 		return canConsume && original.call(user, stack);
 	}

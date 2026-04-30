@@ -15,5 +15,4 @@ public class ServerConfig extends Config {
 
 	public ValidatedInt food_effect_duration_threshold_to_allow_eating = new ValidatedInt(200);
 	public ValidatedInt natural_maximum_food_effects = new ValidatedInt(3, 1024, 0);
-//	public ValidatedBoolean enable_food_block_config_screen = new ValidatedBoolean(false);
 }

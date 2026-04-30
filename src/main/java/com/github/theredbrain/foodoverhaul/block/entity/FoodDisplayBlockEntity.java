@@ -3,7 +3,7 @@ package com.github.theredbrain.foodoverhaul.block.entity;
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.FoodDisplayBlock;
 import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
-import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -107,21 +107,21 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 		return index;
 	}
 
-	public InteractionResult consumeItem(Level world, Player player, int index) {
+	public InteractionResult consumeItem(Level level, Player player, int index) {
 		ItemStack consumedStack = this.displayedItems.get(index).copy();
 		if (!consumedStack.isEmpty()) {
 
 			if (player.getItemInHand(player.getUsedItemHand()).isEmpty()) {
 
-				if (((DuckPlayerEntityMixin) player).foodoverhaul$canConsumeItem(consumedStack)) {
+				if (PlayerHelper.canConsumeItem(player, consumedStack)) {
 					ItemStack remainingStack = consumedStack.finishUsingItem(player.level(), player);
 
 					if (!this.foodDisplayBlockData.infinite_uses) {
 						this.displayedItems.set(index, remainingStack);
-						BlockState oldState = world.getBlockState(worldPosition);
+						BlockState oldState = level.getBlockState(worldPosition);
 						BlockState newState = this.updateEmptyState(oldState);
 						this.setChanged();
-						world.setBlock(worldPosition, newState, Block.UPDATE_ALL);
+						level.setBlock(worldPosition, newState, Block.UPDATE_ALL);
 					}
 					return InteractionResult.SUCCESS;
 				}
@@ -131,10 +131,10 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 				}
 				if (!this.foodDisplayBlockData.infinite_uses) {
 					this.displayedItems.set(index, ItemStack.EMPTY);
-					BlockState oldState = world.getBlockState(worldPosition);
+					BlockState oldState = level.getBlockState(worldPosition);
 					BlockState newState = this.updateEmptyState(oldState);
 					this.setChanged();
-					world.setBlock(worldPosition, newState, Block.UPDATE_ALL);
+					level.setBlock(worldPosition, newState, Block.UPDATE_ALL);
 				}
 				return InteractionResult.SUCCESS;
 			}

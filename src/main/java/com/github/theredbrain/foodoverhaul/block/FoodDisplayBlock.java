@@ -1,7 +1,7 @@
 package com.github.theredbrain.foodoverhaul.block;
 
 import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
-import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerMixin;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -87,7 +87,7 @@ public class FoodDisplayBlock extends BaseEntityBlock {
 				if (!foodDisplayBlockEntity.getDisplayedItems().get(index).isEmpty()) {
 					return foodDisplayBlockEntity.rotateItem(index);
 				} else if (player.isCreative()) {
-					((DuckPlayerEntityMixin) player).foodoverhaul$openFoodDisplayBlockScreen(foodDisplayBlockEntity);
+					((DuckPlayerMixin) player).foodoverhaul$openFoodDisplayBlockScreen(foodDisplayBlockEntity);
 					return InteractionResult.SUCCESS;
 				}
 			} else if (foodDisplayBlock.canPlayerEat(world, pos, state, foodDisplayBlockEntity, player)) {

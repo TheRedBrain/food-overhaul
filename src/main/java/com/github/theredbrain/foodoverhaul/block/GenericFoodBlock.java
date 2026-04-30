@@ -1,8 +1,8 @@
 package com.github.theredbrain.foodoverhaul.block;
 
-import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
-import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerMixin;
+import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.Identifier;
@@ -89,7 +89,7 @@ public class GenericFoodBlock extends BaseEntityBlock {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 			if (/*FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && */player.isCreative() && player.isShiftKeyDown()) {
-				((DuckPlayerEntityMixin) player).foodoverhaul$openFoodBlockScreen(foodBlockEntity);
+				((DuckPlayerMixin) player).foodoverhaul$openFoodBlockScreen(foodBlockEntity);
 				return InteractionResult.SUCCESS;
 			} else if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
 				if (world.isClientSide()) {
@@ -162,7 +162,7 @@ public class GenericFoodBlock extends BaseEntityBlock {
 			FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
 			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(foodBlockData.applied_status_effect_identifier()));
 			if (optional_status_effect.isPresent()) {
-				if (FoodOverhaul.tryEatOverhauledFood(player, optional_status_effect.get())) {
+				if (PlayerHelper.tryEatOverhauledFood(player, optional_status_effect.get())) {
 					if (!world.isClientSide()) {
 						foodBlockEntity.setRecoveryTimer(0);
 						player.addEffect(new MobEffectInstance(

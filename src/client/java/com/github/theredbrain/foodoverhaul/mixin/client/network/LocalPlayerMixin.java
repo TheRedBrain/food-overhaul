@@ -2,7 +2,7 @@ package com.github.theredbrain.foodoverhaul.mixin.client.network;
 
 import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodDisplayBlockEntity;
-import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerEntityMixin;
+import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerMixin;
 import com.github.theredbrain.foodoverhaul.gui.screen.ingame.FoodBlockScreen;
 import com.github.theredbrain.foodoverhaul.gui.screen.ingame.FoodDisplayBlockScreen;
 import com.mojang.authlib.GameProfile;
@@ -18,13 +18,13 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Environment(EnvType.CLIENT)
 @Mixin(LocalPlayer.class)
-public abstract class ClientPlayerEntityMixin extends AbstractClientPlayer implements DuckPlayerEntityMixin {
+public abstract class LocalPlayerMixin extends AbstractClientPlayer implements DuckPlayerMixin {
 
 	@Shadow
 	@Final
 	protected Minecraft minecraft;
 
-	public ClientPlayerEntityMixin(ClientLevel world, GameProfile profile) {
+	public LocalPlayerMixin(ClientLevel world, GameProfile profile) {
 		super(world, profile);
 	}
 
