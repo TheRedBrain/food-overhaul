@@ -32,6 +32,12 @@ Food Overhaul adds the "foodoverhaul:remove_effects_in_tag" consume effect typ. 
 
 ## Customization
 
+### For 26.1+
+
+Currently, no data-driven solution exists, that would allow modifying default data components of items.
+
+### For 1.21.1:
+
 Food effects can be added to any item (even modded) by vanilla methods (mainly commands) or by using third party mods.
 
 https://modrinth.com/mod/item-components and https://modrinth.com/mod/default-components both allow setting the default components of items via data packs. 

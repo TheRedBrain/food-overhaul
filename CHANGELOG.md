@@ -1,6 +1,6 @@
 # 3.0.0
 
-- updated to 1.21.10
+- updated to 26.1.x
 
 > The base value for the "foodoverhaul:maximum_food_effects" entity attribute was changed. Existing players in updated worlds should reset the attribute using the /attribute reset command.
 
@@ -9,6 +9,7 @@
 - added "natural_maximum_food_effects" server config option
 - added Food Display Block, can hold up to 4 items which can be consumed by interacting with the block. The usual checks for existing food effects and hunger apply.
   - This block is mainly designed for adventure maps and servers, so it can't be obtained in survival gameplay. Feedback and suggestions are very welcome, as always!
+  - has a config screen for creative mode players
 
 ## Changes
 
