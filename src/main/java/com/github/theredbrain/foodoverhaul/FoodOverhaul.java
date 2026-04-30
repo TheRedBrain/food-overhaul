@@ -37,8 +37,8 @@ public class FoodOverhaul implements ModInitializer {
 		LOGGER.info("Enjoy your overhauled food!");
 		SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
-		BlockRegistry.init();
 		DataComponentRegistry.init();
+		BlockRegistry.init();
 		EntityRegistry.init();
 		ServerPacketRegistry.init();
 	}
