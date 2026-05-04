@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "foodoverhaul:block/generic_food_block"
+    }
+  }
+}

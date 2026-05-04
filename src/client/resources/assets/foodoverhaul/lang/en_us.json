@@ -1,6 +1,11 @@
 {
 	"attribute.name.max_food_effects": "Max Food Effects",
 
+	"item.foodoverhaul.food_display_block": "Food Display Block",
+	"item.foodoverhaul.generic_food_block": "Generic Food Block",
+
+	"itemGroup.foodoverhaul.food_overhaul": "Food Overhaul",
+
 	"hud.message.food_eaten_already": "You can't eat more ",
 	"hud.message.max_food_eaten": "You are full.",
 	"hud.message.food_block.update_successful": "Food Block Updated!",
@@ -53,7 +58,5 @@
 	"gui.food_display_block.item_rotation_4_label": "Rotation Item 4",
 	"gui.food_display_block.infinite_use_true_label": "True",
 	"gui.food_display_block.infinite_use_false_label": "False",
-	"gui.food_display_block.infinite_uses_label": "Infinite Uses:",
-
-	"item.foodoverhaul.food_display_block": "Food Display Block"
+	"gui.food_display_block.infinite_uses_label": "Infinite Uses:"
 }

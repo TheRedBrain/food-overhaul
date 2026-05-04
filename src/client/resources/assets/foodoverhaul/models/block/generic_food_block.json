@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "#up",
+    "down": "foodoverhaul:block/generic_food_block_down",
+    "up": "foodoverhaul:block/generic_food_block_up",
+    "north": "foodoverhaul:block/generic_food_block_north",
+    "east": "foodoverhaul:block/generic_food_block_east",
+    "south": "foodoverhaul:block/generic_food_block_south",
+    "west": "foodoverhaul:block/generic_food_block_west"
+  }
+}
