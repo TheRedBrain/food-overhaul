@@ -3,10 +3,12 @@
 ## Additions
 
 - added creative mode tab for Food Overhaul
+- added RemoveEffectsInTagStatusEffect, a configurable version of the now deprecated RemoveFoodStatusEffect
 
 ## Changes
 
 - food blocks can now apply a list of effects
+- deprecated RemoveFoodStatusEffect
 
 ## Fixes
 

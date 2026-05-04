@@ -1,20 +1,23 @@
 package com.github.theredbrain.foodoverhaul.entity.effect;
 
-import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import net.minecraft.core.Holder;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
-@Deprecated
-public class RemoveFoodStatusEffect extends MobEffect {
-	public RemoveFoodStatusEffect(MobEffectCategory category, int color) {
+public class RemoveEffectsInTagStatusEffect extends MobEffect {
+
+	private final TagKey<MobEffect> effectsToBeRemoved;
+
+	public RemoveEffectsInTagStatusEffect(TagKey<MobEffect> effectsToBeRemoved, MobEffectCategory category, int color) {
 		super(category, color);
+		this.effectsToBeRemoved = effectsToBeRemoved;
 	}
 
-	public RemoveFoodStatusEffect() {
-		this(MobEffectCategory.HARMFUL, 3381504);
+	public RemoveEffectsInTagStatusEffect(TagKey<MobEffect> effectsToBeRemoved) {
+		this(effectsToBeRemoved, MobEffectCategory.HARMFUL, 3381504);
 	}
 
 	@Override
@@ -25,7 +28,7 @@ public class RemoveFoodStatusEffect extends MobEffect {
 	private void removeEffects(LivingEntity livingEntity) {
 		for (MobEffectInstance currentEffect : livingEntity.getActiveEffects().stream().toList()) {
 			Holder<MobEffect> statusEffectRegistryEntry = currentEffect.getEffect();
-			if (statusEffectRegistryEntry.value() instanceof RemoveFoodStatusEffect || statusEffectRegistryEntry.is(FoodOverhaul.FOOD_EFFECTS)) {
+			if (statusEffectRegistryEntry.value() instanceof RemoveEffectsInTagStatusEffect || statusEffectRegistryEntry.is(this.effectsToBeRemoved)) {
 				livingEntity.removeEffect(statusEffectRegistryEntry);
 			}
 		}

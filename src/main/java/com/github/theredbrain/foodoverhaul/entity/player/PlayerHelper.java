@@ -1,6 +1,7 @@
 package com.github.theredbrain.foodoverhaul.entity.player;
 
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
+import com.github.theredbrain.foodoverhaul.entity.effect.RemoveEffectsInTagStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.effect.RemoveFoodStatusEffect;
 import com.google.common.collect.HashMultimap;
 import net.minecraft.core.Holder;
@@ -61,7 +62,7 @@ public class PlayerHelper {
 	}
 
 	public static boolean tryEatOverhauledFood(Player player, Holder<MobEffect> mobEffectHolder) {
-		if (mobEffectHolder.value() instanceof RemoveFoodStatusEffect) {
+		if (mobEffectHolder.value() instanceof RemoveFoodStatusEffect || mobEffectHolder.value() instanceof RemoveEffectsInTagStatusEffect) {
 			return true;
 		} else if (mobEffectHolder.is(FoodOverhaul.FOOD_EFFECTS)) {
 			int currentEatenFoods = 0;
