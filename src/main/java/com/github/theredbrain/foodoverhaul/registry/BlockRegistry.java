@@ -44,11 +44,11 @@ public class BlockRegistry {
 			false
 	);
 
-	public static final Block GENERIC_FOOD_BLOCK = registerBlockWithFoodBlockData(GENERIC_FOOD_BLOCK_DATA, GENERIC_FOOD_BLOCK_BLOCK_KEY, GENERIC_FOOD_BLOCK_ITEM_KEY, new GenericFoodBlock(BlockBehaviour.Properties.of().setId(GENERIC_FOOD_BLOCK_BLOCK_KEY)), List.of(CreativeModeTabRegistry.CREATIVE_MODE_TAB_KEY));
+	public static final Block GENERIC_FOOD_BLOCK = registerBlockWithFoodBlockData(GENERIC_FOOD_BLOCK_DATA, GENERIC_FOOD_BLOCK_BLOCK_KEY, GENERIC_FOOD_BLOCK_ITEM_KEY, new GenericFoodBlock(BlockBehaviour.Properties.of().setId(GENERIC_FOOD_BLOCK_BLOCK_KEY)), List.of(FoodOverhaul.CREATIVE_MODE_TAB_KEY));
 
 	public static ResourceKey<Block> FOOD_DISPLAY_BLOCK_BLOCK_KEY = ResourceKey.create(Registries.BLOCK, FoodOverhaul.identifier("food_display_block"));
 	public static ResourceKey<Item> FOOD_DISPLAY_BLOCK_ITEM_KEY = ResourceKey.create(Registries.ITEM, FoodOverhaul.identifier("food_display_block"));
-	public static final Block FOOD_DISPLAY_BLOCK = registerBlock(FOOD_DISPLAY_BLOCK_BLOCK_KEY, FOOD_DISPLAY_BLOCK_ITEM_KEY, new FoodDisplayBlock(BlockBehaviour.Properties.of().setId(FOOD_DISPLAY_BLOCK_BLOCK_KEY).strength(0.3F).noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never)), List.of(CreativeModeTabRegistry.CREATIVE_MODE_TAB_KEY));
+	public static final Block FOOD_DISPLAY_BLOCK = registerBlock(FOOD_DISPLAY_BLOCK_BLOCK_KEY, FOOD_DISPLAY_BLOCK_ITEM_KEY, new FoodDisplayBlock(BlockBehaviour.Properties.of().setId(FOOD_DISPLAY_BLOCK_BLOCK_KEY).strength(0.3F).noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never)), List.of(FoodOverhaul.CREATIVE_MODE_TAB_KEY));
 
 	private static Block registerBlockWithFoodBlockData(FoodBlockEntity.FoodBlockData foodBlockData, ResourceKey<Block> block_key, ResourceKey<Item> item_key, Block block, List<ResourceKey<CreativeModeTab>> itemGroupList) {
 		Registry.register(BuiltInRegistries.ITEM, item_key, new BlockItem(block, new Item.Properties().setId(item_key).component(FoodOverhaulDataComponents.FOOD_BLOCK_DATA, new FoodBlockDataComponent(foodBlockData)).stacksTo(1)));
