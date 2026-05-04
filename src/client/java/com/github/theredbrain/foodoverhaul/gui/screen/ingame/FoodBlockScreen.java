@@ -1,5 +1,6 @@
 package com.github.theredbrain.foodoverhaul.gui.screen.ingame;
 
+import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.github.theredbrain.foodoverhaul.network.packet.UpdateFoodBlockPacket;
 import net.fabricmc.api.EnvType;
@@ -10,16 +11,38 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
+import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Environment(value = EnvType.CLIENT)
 public class FoodBlockScreen extends Screen {
+	private static final Identifier SCROLL_BAR_BACKGROUND_8_92_TEXTURE = FoodOverhaul.identifier("scroll_bar/scroll_bar_background_8_92");
+	private static final Identifier SCROLLER_VERTICAL_6_7_TEXTURE = FoodOverhaul.identifier("scroll_bar/scroller_vertical_6_7");
+	public static final WidgetSprites REMOVE_ENTRY_BUTTON_TEXTURES = new WidgetSprites(
+			FoodOverhaul.identifier("widgets/remove_entry_button"), FoodOverhaul.identifier("widgets/remove_entry_button_highlighted")
+	);
+	private static final int VISIBLE_LIST_ELEMENTS = 4;
+
+	private static final Component ADD_NEW_APPLIED_STATUS_EFFECT_BUTTON_LABEL_TEXT = Component.translatable("gui.food_block.add_new_applied_status_effect_button_label");
 	private static final Component STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Component.translatable("gui.food_block.status_effect_identifier_label");
 	private static final Component STATUS_EFFECT_DURATION_LABEL_TEXT = Component.translatable("gui.food_block.status_effect_duration_label");
 	private static final Component STATUS_EFFECT_AMPLIFIER_LABEL_TEXT = Component.translatable("gui.food_block.status_effect_amplifier_label");
@@ -39,17 +62,24 @@ public class FoodBlockScreen extends Screen {
 	private static final Component INFINITE_USE_FALSE_LABEL_TEXT = Component.translatable("gui.food_block.infinite_use_false_label");
 	private final FoodBlockEntity foodBlockEntity;
 	private final FoodBlockEntity.FoodBlockData foodBlockData;
+	private CycleButton<ScreenPage> cycleScreenPageButton;
 	private ScreenPage screenPage;
 
-	private EditBox appliedStatusEffectIdentifierField;
-	private EditBox appliedStatusEffectDurationField;
-	private EditBox appliedStatusEffectAmplifierField;
-	private CycleButton<Boolean> toggleAppliedStatusEffectAmbientButton;
-	private CycleButton<Boolean> toggleAppliedStatusEffectShowParticlesButton;
-	private CycleButton<Boolean> toggleAppliedStatusEffectShowIconButton;
-	private boolean appliedStatusEffectAmbient;
-	private boolean appliedStatusEffectShowParticles;
-	private boolean appliedStatusEffectShowIcon;
+	private final List<MobEffectInstance> appliedStatusEffectList = new ArrayList<>();
+	private Button removeListEntryButton0;
+	private Button removeListEntryButton1;
+	private Button removeListEntryButton2;
+	private Button removeListEntryButton3;
+	private Button addNewAppliedStatusEffectButton;
+	private EditBox newAppliedStatusEffectIdentifierField;
+	private EditBox newAppliedStatusEffectDurationField;
+	private EditBox newAppliedStatusEffectAmplifierField;
+	private CycleButton<Boolean> toggleNewAppliedStatusEffectAmbientButton;
+	private CycleButton<Boolean> toggleNewAppliedStatusEffectShowParticlesButton;
+	private CycleButton<Boolean> toggleNewAppliedStatusEffectShowIconButton;
+	private boolean newAppliedStatusEffectAmbient;
+	private boolean newAppliedStatusEffectShowParticles;
+	private boolean newAppliedStatusEffectShowIcon;
 
 	private EditBox interactionResultItemIdentifierField;
 	private EditBox interactionToolItemIdentifierField;
@@ -58,12 +88,49 @@ public class FoodBlockScreen extends Screen {
 	private EditBox recoveryTimerThresholdField;
 	private boolean infiniteUses;
 	private CycleButton<Boolean> toggleInfiniteUsesButton;
+	private int scrollPosition = 0;
+	private float scrollAmount = 0.0f;
+	private boolean mouseClicked = false;
 
 	public FoodBlockScreen(FoodBlockEntity foodBlockEntity) {
 		super(GameNarrator.NO_TITLE);
 		this.foodBlockEntity = foodBlockEntity;
 		this.foodBlockData = this.foodBlockEntity.getFoodBlockData();
-		this.screenPage = ScreenPage.APPLIED_EFFECT;
+		this.screenPage = ScreenPage.APPLIED_EFFECTS;
+	}
+
+	private void addNewAppliedStatusEffect() {
+		Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(this.newAppliedStatusEffectIdentifierField.getValue()));
+		if (optional_status_effect.isEmpty()) {
+			return;
+		}
+
+		MobEffectInstance newMobEffectInstance = new MobEffectInstance(
+				optional_status_effect.get(),
+				parseInt(this.newAppliedStatusEffectDurationField.getValue()),
+				parseInt(this.newAppliedStatusEffectAmplifierField.getValue()),
+				this.newAppliedStatusEffectAmbient,
+				this.newAppliedStatusEffectShowParticles,
+				this.newAppliedStatusEffectShowIcon
+		);
+		for (MobEffectInstance entry : this.appliedStatusEffectList) {
+			if (entry.equals(newMobEffectInstance)) {
+				return;
+			}
+		}
+		this.appliedStatusEffectList.add(newMobEffectInstance);
+		this.scrollPosition = 0;
+		this.scrollAmount = 0.0f;
+		this.updateWidgets();
+	}
+
+	private void removeAppliedStatusEffect(int index) {
+		if (index + this.scrollPosition < this.appliedStatusEffectList.size()) {
+			this.appliedStatusEffectList.remove(index + this.scrollPosition);
+		}
+		this.scrollPosition = 0;
+		this.scrollAmount = 0.0f;
+		this.updateWidgets();
 	}
 
 	private void done() {
@@ -79,83 +146,97 @@ public class FoodBlockScreen extends Screen {
 	@Override
 	protected void init() {
 
-		this.addRenderableWidget(CycleButton.builder(ScreenPage::asText, this.screenPage).withValues((ScreenPage[]) ScreenPage.values()).displayOnlyValue().create(this.width / 2 - 154, 30, 300, 20, Component.empty(), (button, screenPage) -> {
+		this.cycleScreenPageButton = this.addRenderableWidget(CycleButton.builder(ScreenPage::asText, this.screenPage).withValues((ScreenPage[]) ScreenPage.values()).displayOnlyValue().create(this.width / 2 - 154, 10, 300, 20, Component.empty(), (button, screenPage) -> {
 			this.screenPage = screenPage;
 			this.updateWidgets();
 		}));
 
-		this.appliedStatusEffectIdentifierField = new EditBox(this.font, this.width / 2 - 154, 65, 300, 20, Component.empty());
-		this.appliedStatusEffectIdentifierField.setMaxLength(128);
-		this.appliedStatusEffectIdentifierField.setValue(this.foodBlockData.applied_status_effect_identifier());
-		this.addWidget(this.appliedStatusEffectIdentifierField);
+		this.appliedStatusEffectList.clear();
+		this.appliedStatusEffectList.addAll(this.foodBlockData.applied_status_effects());
 
-		this.appliedStatusEffectDurationField = new EditBox(this.font, this.width / 2 - 154, 100, 75, 20, Component.empty());
-		this.appliedStatusEffectDurationField.setValue(Integer.toString(this.foodBlockData.applied_status_effect_duration()));
-		this.addWidget(this.appliedStatusEffectDurationField);
+		this.removeListEntryButton0 = this.addRenderableWidget(new ImageButton(this.width / 2 - 141, 34, 20, 20, REMOVE_ENTRY_BUTTON_TEXTURES, button -> this.removeAppliedStatusEffect(0)));
+		this.removeListEntryButton1 = this.addRenderableWidget(new ImageButton(this.width / 2 - 141, 58, 20, 20, REMOVE_ENTRY_BUTTON_TEXTURES, button -> this.removeAppliedStatusEffect(1)));
+		this.removeListEntryButton2 = this.addRenderableWidget(new ImageButton(this.width / 2 - 141, 82, 20, 20, REMOVE_ENTRY_BUTTON_TEXTURES, button -> this.removeAppliedStatusEffect(2)));
+		this.removeListEntryButton3 = this.addRenderableWidget(new ImageButton(this.width / 2 - 141, 106, 20, 20, REMOVE_ENTRY_BUTTON_TEXTURES, button -> this.removeAppliedStatusEffect(3)));
 
-		this.appliedStatusEffectAmplifierField = new EditBox(this.font, this.width / 2 - 75, 100, 75, 20, Component.empty());
-		this.appliedStatusEffectAmplifierField.setValue(Integer.toString(this.foodBlockData.applied_status_effect_amplifier()));
-		this.addWidget(this.appliedStatusEffectAmplifierField);
+		this.addNewAppliedStatusEffectButton = this.addRenderableWidget(Button.builder(ADD_NEW_APPLIED_STATUS_EFFECT_BUTTON_LABEL_TEXT, button -> this.addNewAppliedStatusEffect()).bounds(this.width / 2 - 154, 130, 300, 20).build());
 
-		this.appliedStatusEffectAmbient = this.foodBlockData.applied_status_effect_ambient();
-		this.toggleAppliedStatusEffectAmbientButton = this.addRenderableWidget(CycleButton.booleanBuilder(AMBIENT_TRUE_LABEL_TEXT, AMBIENT_FALSE_LABEL_TEXT, this.appliedStatusEffectAmbient).displayOnlyValue().create(this.width / 2 + 4, 100, 150, 20, Component.empty(), (button, appliedStatusEffectAmbient) -> {
-			this.appliedStatusEffectAmbient = appliedStatusEffectAmbient;
+		this.newAppliedStatusEffectIdentifierField = new EditBox(this.font, this.width / 2 - 154, 165, 200, 20, Component.empty());
+		this.newAppliedStatusEffectIdentifierField.setMaxLength(128);
+		this.addWidget(this.newAppliedStatusEffectIdentifierField);
+
+		this.newAppliedStatusEffectDurationField = new EditBox(this.font, this.width / 2 + 50, 165, 50, 20, Component.empty());
+		this.addWidget(this.newAppliedStatusEffectDurationField);
+
+		this.newAppliedStatusEffectAmplifierField = new EditBox(this.font, this.width / 2 + 104, 165, 50, 20, Component.empty());
+		this.addWidget(this.newAppliedStatusEffectAmplifierField);
+
+		this.newAppliedStatusEffectAmbient = false;
+		this.toggleNewAppliedStatusEffectAmbientButton = this.addRenderableWidget(CycleButton.booleanBuilder(AMBIENT_TRUE_LABEL_TEXT, AMBIENT_FALSE_LABEL_TEXT, false).displayOnlyValue().create(this.width / 2 - 154, 189, 100, 20, Component.empty(), (button, appliedStatusEffectAmbient) -> {
+			this.newAppliedStatusEffectAmbient = appliedStatusEffectAmbient;
 		}));
 
-		this.appliedStatusEffectShowParticles = this.foodBlockData.applied_status_effect_show_particles();
-		this.toggleAppliedStatusEffectShowParticlesButton = this.addRenderableWidget(CycleButton.booleanBuilder(SHOW_PARTICLES_LABEL_TEXT, HIDE_PARTICLES_LABEL_TEXT, this.appliedStatusEffectShowParticles).displayOnlyValue().create(this.width / 2 - 154, 124, 150, 20, Component.empty(), (button, appliedStatusEffectShowParticles) -> {
-			this.appliedStatusEffectShowParticles = appliedStatusEffectShowParticles;
+		this.newAppliedStatusEffectShowParticles = false;
+		this.toggleNewAppliedStatusEffectShowParticlesButton = this.addRenderableWidget(CycleButton.booleanBuilder(SHOW_PARTICLES_LABEL_TEXT, HIDE_PARTICLES_LABEL_TEXT, false).displayOnlyValue().create(this.width / 2 - 50, 189, 100, 20, Component.empty(), (button, appliedStatusEffectShowParticles) -> {
+			this.newAppliedStatusEffectShowParticles = appliedStatusEffectShowParticles;
 		}));
 
-		this.appliedStatusEffectShowIcon = this.foodBlockData.applied_status_effect_show_icon();
-		this.toggleAppliedStatusEffectShowIconButton = this.addRenderableWidget(CycleButton.booleanBuilder(SHOW_ICON_LABEL_TEXT, HIDE_ICON_LABEL_TEXT, this.appliedStatusEffectShowIcon).displayOnlyValue().create(this.width / 2 + 4, 124, 150, 20, Component.empty(), (button, appliedStatusEffectShowIcon) -> {
-			this.appliedStatusEffectShowIcon = appliedStatusEffectShowIcon;
+		this.newAppliedStatusEffectShowIcon = true;
+		this.toggleNewAppliedStatusEffectShowIconButton = this.addRenderableWidget(CycleButton.booleanBuilder(SHOW_ICON_LABEL_TEXT, HIDE_ICON_LABEL_TEXT, true).displayOnlyValue().create(this.width / 2 + 54, 189, 100, 20, Component.empty(), (button, appliedStatusEffectShowIcon) -> {
+			this.newAppliedStatusEffectShowIcon = appliedStatusEffectShowIcon;
 		}));
 
 
-		this.interactionResultItemIdentifierField = new EditBox(this.font, this.width / 2 - 154, 65, 300, 20, Component.empty());
+		this.interactionResultItemIdentifierField = new EditBox(this.font, this.width / 2 - 154, 45, 300, 20, Component.empty());
 		this.interactionResultItemIdentifierField.setMaxLength(128);
 		this.interactionResultItemIdentifierField.setValue(this.foodBlockData.interaction_result_item_identifier());
 		this.addWidget(this.interactionResultItemIdentifierField);
 
-		this.interactionToolItemIdentifierField = new EditBox(this.font, this.width / 2 - 154, 100, 300, 20, Component.empty());
+		this.interactionToolItemIdentifierField = new EditBox(this.font, this.width / 2 - 154, 80, 300, 20, Component.empty());
 		this.interactionToolItemIdentifierField.setMaxLength(128);
 		this.interactionToolItemIdentifierField.setValue(this.foodBlockData.interaction_tool_item_identifier());
 		this.addWidget(this.interactionToolItemIdentifierField);
 
-		this.usePreventingStatusEffectIdentifierField = new EditBox(this.font, this.width / 2 - 154, 135, 300, 20, Component.empty());
+		this.usePreventingStatusEffectIdentifierField = new EditBox(this.font, this.width / 2 - 154, 115, 300, 20, Component.empty());
 		this.usePreventingStatusEffectIdentifierField.setMaxLength(128);
 		this.usePreventingStatusEffectIdentifierField.setValue(this.foodBlockData.use_preventing_status_effect_identifier());
 		this.addWidget(this.usePreventingStatusEffectIdentifierField);
 
-		this.requiredAdvancementIdentifierField = new EditBox(this.font, this.width / 2 - 154, 170, 300, 20, Component.empty());
+		this.requiredAdvancementIdentifierField = new EditBox(this.font, this.width / 2 - 154, 150, 300, 20, Component.empty());
 		this.requiredAdvancementIdentifierField.setMaxLength(128);
 		this.requiredAdvancementIdentifierField.setValue(this.foodBlockData.required_advancement_identifier());
 		this.addWidget(this.requiredAdvancementIdentifierField);
 
-		this.recoveryTimerThresholdField = new EditBox(this.font, this.width / 2 - 154, 205, 150, 20, Component.empty());
+		this.recoveryTimerThresholdField = new EditBox(this.font, this.width / 2 - 154, 189, 150, 20, Component.empty());
 		this.recoveryTimerThresholdField.setMaxLength(128);
 		this.recoveryTimerThresholdField.setValue(Integer.toString(this.foodBlockData.recovery_timer_threshold()));
 		this.addWidget(this.recoveryTimerThresholdField);
 
 		this.infiniteUses = this.foodBlockData.infinite_uses();
-		this.toggleInfiniteUsesButton = this.addRenderableWidget(CycleButton.booleanBuilder(INFINITE_USE_TRUE_LABEL_TEXT, INFINITE_USE_FALSE_LABEL_TEXT, this.infiniteUses).displayOnlyValue().create(this.width / 2 + 4, 205, 150, 20, Component.empty(), (button, infiniteUses) -> {
+		this.toggleInfiniteUsesButton = this.addRenderableWidget(CycleButton.booleanBuilder(INFINITE_USE_TRUE_LABEL_TEXT, INFINITE_USE_FALSE_LABEL_TEXT, this.infiniteUses).displayOnlyValue().create(this.width / 2 + 4, 189, 150, 20, Component.empty(), (button, infiniteUses) -> {
 			this.infiniteUses = infiniteUses;
 		}));
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.done()).bounds(this.width / 2 - 4 - 150, 229, 150, 20).build());
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.cancel()).bounds(this.width / 2 + 4, 229, 150, 20).build());
+		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.done()).bounds(this.width / 2 - 4 - 150, 213, 150, 20).build());
+		this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> this.cancel()).bounds(this.width / 2 + 4, 213, 150, 20).build());
 		this.updateWidgets();
 	}
 
 	private void updateWidgets() {
+		this.cycleScreenPageButton.visible = false;
 
-		this.appliedStatusEffectIdentifierField.setVisible(false);
-		this.appliedStatusEffectDurationField.setVisible(false);
-		this.appliedStatusEffectAmplifierField.setVisible(false);
-		this.toggleAppliedStatusEffectAmbientButton.visible = false;
-		this.toggleAppliedStatusEffectShowParticlesButton.visible = false;
-		this.toggleAppliedStatusEffectShowIconButton.visible = false;
+		this.removeListEntryButton0.visible = false;
+		this.removeListEntryButton1.visible = false;
+		this.removeListEntryButton2.visible = false;
+		this.removeListEntryButton3.visible = false;
+		this.addNewAppliedStatusEffectButton.visible = false;
+
+		this.newAppliedStatusEffectIdentifierField.setVisible(false);
+		this.newAppliedStatusEffectDurationField.setVisible(false);
+		this.newAppliedStatusEffectAmplifierField.setVisible(false);
+		this.toggleNewAppliedStatusEffectAmbientButton.visible = false;
+		this.toggleNewAppliedStatusEffectShowParticlesButton.visible = false;
+		this.toggleNewAppliedStatusEffectShowIconButton.visible = false;
 
 		this.interactionResultItemIdentifierField.setVisible(false);
 		this.interactionToolItemIdentifierField.setVisible(false);
@@ -164,15 +245,31 @@ public class FoodBlockScreen extends Screen {
 		this.recoveryTimerThresholdField.setVisible(false);
 		this.toggleInfiniteUsesButton.visible = false;
 
-		if (this.screenPage == ScreenPage.APPLIED_EFFECT) {
+		this.cycleScreenPageButton.visible = true;
+		if (this.screenPage == ScreenPage.APPLIED_EFFECTS) {
 
-			this.appliedStatusEffectIdentifierField.setVisible(true);
-			this.appliedStatusEffectDurationField.setVisible(true);
-			this.appliedStatusEffectAmplifierField.setVisible(true);
+			int index = 0;
+			for (int i = 0; i < Math.min(VISIBLE_LIST_ELEMENTS, this.appliedStatusEffectList.size()); i++) {
+				if (index == 0) {
+					this.removeListEntryButton0.visible = true;
+				} else if (index == 1) {
+					this.removeListEntryButton1.visible = true;
+				} else if (index == 2) {
+					this.removeListEntryButton2.visible = true;
+				} else if (index == 3) {
+					this.removeListEntryButton3.visible = true;
+				}
+				index++;
+			}
+			this.addNewAppliedStatusEffectButton.visible = true;
 
-			this.toggleAppliedStatusEffectAmbientButton.visible = true;
-			this.toggleAppliedStatusEffectShowParticlesButton.visible = true;
-			this.toggleAppliedStatusEffectShowIconButton.visible = true;
+			this.newAppliedStatusEffectIdentifierField.setVisible(true);
+			this.newAppliedStatusEffectDurationField.setVisible(true);
+			this.newAppliedStatusEffectAmplifierField.setVisible(true);
+
+			this.toggleNewAppliedStatusEffectAmbientButton.visible = true;
+			this.toggleNewAppliedStatusEffectShowParticlesButton.visible = true;
+			this.toggleNewAppliedStatusEffectShowIconButton.visible = true;
 
 		} else if (this.screenPage == ScreenPage.TRIGGER_SETTINGS) {
 
@@ -189,13 +286,14 @@ public class FoodBlockScreen extends Screen {
 	@Override
 	public void resize(int width, int height) {
 		ScreenPage var = this.screenPage;
-		boolean bool = this.appliedStatusEffectAmbient;
-		boolean bool1 = this.appliedStatusEffectShowParticles;
-		boolean bool2 = this.appliedStatusEffectShowIcon;
+		List<MobEffectInstance> list = new ArrayList<>(this.appliedStatusEffectList);
+		boolean bool = this.newAppliedStatusEffectAmbient;
+		boolean bool1 = this.newAppliedStatusEffectShowParticles;
+		boolean bool2 = this.newAppliedStatusEffectShowIcon;
 		boolean bool3 = this.infiniteUses;
-		String string = this.appliedStatusEffectIdentifierField.getValue();
-		String string1 = this.appliedStatusEffectDurationField.getValue();
-		String string2 = this.appliedStatusEffectAmplifierField.getValue();
+		String string = this.newAppliedStatusEffectIdentifierField.getValue();
+		String string1 = this.newAppliedStatusEffectDurationField.getValue();
+		String string2 = this.newAppliedStatusEffectAmplifierField.getValue();
 		String string3 = this.interactionResultItemIdentifierField.getValue();
 		String string4 = this.interactionToolItemIdentifierField.getValue();
 		String string5 = this.usePreventingStatusEffectIdentifierField.getValue();
@@ -203,18 +301,62 @@ public class FoodBlockScreen extends Screen {
 		String string7 = this.recoveryTimerThresholdField.getValue();
 		this.init(width, height);
 		this.screenPage = var;
-		this.appliedStatusEffectAmbient = bool;
-		this.appliedStatusEffectShowParticles = bool1;
-		this.appliedStatusEffectShowIcon = bool2;
+		this.cycleScreenPageButton.setValue(var);
+		this.appliedStatusEffectList.clear();
+		this.appliedStatusEffectList.addAll(list);
+		this.newAppliedStatusEffectAmbient = bool;
+		this.toggleNewAppliedStatusEffectAmbientButton.setValue(bool);
+		this.newAppliedStatusEffectShowParticles = bool1;
+		this.toggleNewAppliedStatusEffectShowParticlesButton.setValue(bool1);
+		this.newAppliedStatusEffectShowIcon = bool2;
+		this.toggleNewAppliedStatusEffectShowIconButton.setValue(bool2);
 		this.infiniteUses = bool3;
-		this.appliedStatusEffectIdentifierField.setValue(string);
-		this.appliedStatusEffectDurationField.setValue(string1);
-		this.appliedStatusEffectAmplifierField.setValue(string2);
+		this.toggleInfiniteUsesButton.setValue(bool3);
+		this.newAppliedStatusEffectIdentifierField.setValue(string);
+		this.newAppliedStatusEffectDurationField.setValue(string1);
+		this.newAppliedStatusEffectAmplifierField.setValue(string2);
 		this.interactionResultItemIdentifierField.setValue(string3);
 		this.interactionToolItemIdentifierField.setValue(string4);
 		this.usePreventingStatusEffectIdentifierField.setValue(string5);
 		this.requiredAdvancementIdentifierField.setValue(string6);
 		this.recoveryTimerThresholdField.setValue(string7);
+		this.updateWidgets();
+	}
+
+	@Override
+	public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+		this.mouseClicked = false;
+		if (this.appliedStatusEffectList.size() > VISIBLE_LIST_ELEMENTS && this.screenPage == ScreenPage.APPLIED_EFFECTS) {
+			int i = this.width / 2 - 152;
+			int j = 35;
+			if (event.x() >= (double) i && event.x() < (double) (i + 6) && event.y() >= (double) j && event.y() < (double) (j + 90)) {
+				this.mouseClicked = true;
+			}
+		}
+		return super.mouseClicked(event, doubleClick);
+	}
+
+	@Override
+	public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
+		if (this.appliedStatusEffectList.size() > VISIBLE_LIST_ELEMENTS && this.screenPage == ScreenPage.APPLIED_EFFECTS && this.mouseClicked) {
+			int i = this.appliedStatusEffectList.size() - VISIBLE_LIST_ELEMENTS;
+			float f = (float) dy / (float) i;
+			this.scrollAmount = Mth.clamp(this.scrollAmount + f, 0.0f, 1.0f);
+			this.scrollPosition = (int) ((double) (this.scrollAmount * (float) i));
+		}
+		return super.mouseDragged(event, dx, dy);
+	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		if (this.appliedStatusEffectList.size() > VISIBLE_LIST_ELEMENTS && this.screenPage == ScreenPage.APPLIED_EFFECTS
+				&& mouseX >= (double) (this.width / 2 - 153) && mouseX <= (double) (this.width / 2 + 154) && mouseY >= 34 && mouseY <= 126) {
+			int i = this.appliedStatusEffectList.size() - VISIBLE_LIST_ELEMENTS;
+			float f = (float) scrollY / (float) i;
+			this.scrollAmount = Mth.clamp(this.scrollAmount - f, 0.0f, 1.0f);
+			this.scrollPosition = (int) ((double) (this.scrollAmount * (float) i));
+		}
+		return true;
 	}
 
 	@Override
@@ -222,23 +364,39 @@ public class FoodBlockScreen extends Screen {
 
 		super.extractRenderState(graphics, mouseX, mouseY, a);
 
-		if (this.screenPage == ScreenPage.APPLIED_EFFECT) {
-			graphics.text(this.font, STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 55, CommonColors.LIGHT_GRAY);
-			this.appliedStatusEffectIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, STATUS_EFFECT_DURATION_LABEL_TEXT, this.width / 2 - 153, 90, CommonColors.LIGHT_GRAY);
-			this.appliedStatusEffectDurationField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, STATUS_EFFECT_AMPLIFIER_LABEL_TEXT, this.width / 2 - 74, 90, CommonColors.LIGHT_GRAY);
-			this.appliedStatusEffectAmplifierField.extractRenderState(graphics, mouseX, mouseY, a);
+		if (this.screenPage == ScreenPage.APPLIED_EFFECTS) {
+
+			for (int i = this.scrollPosition; i < Math.min(this.scrollPosition + VISIBLE_LIST_ELEMENTS, this.appliedStatusEffectList.size()); i++) {
+				MobEffectInstance mobEffectInstance = this.appliedStatusEffectList.get(i);
+				Component text = Component.translatable("gui.food_block.list_entry.1", mobEffectInstance.getEffect().value().getDisplayName(), mobEffectInstance.getDuration(), mobEffectInstance.getAmplifier());
+				MutableComponent text1 = mobEffectInstance.isAmbient() ? Component.translatable("gui.food_block.list_entry.is_ambient.true") : Component.translatable("gui.food_block.list_entry.is_ambient.false");
+				text1.append(mobEffectInstance.isVisible() ? Component.translatable("gui.food_block.list_entry.is_visible.true") : Component.translatable("gui.food_block.list_entry.is_visible.false"));
+				text1.append(mobEffectInstance.showIcon() ? Component.translatable("gui.food_block.list_entry.show_icon.true") : Component.translatable("gui.food_block.list_entry.show_icon.false"));
+				graphics.text(this.font, text, this.width / 2 - 117, 35 + ((i - this.scrollPosition) * 24), CommonColors.LIGHT_GRAY);
+				graphics.text(this.font, text1, this.width / 2 - 117, 45 + ((i - this.scrollPosition) * 24), CommonColors.LIGHT_GRAY);
+				graphics.text(this.font, STATUS_EFFECT_AMPLIFIER_LABEL_TEXT, this.width / 2 + 105, 165, CommonColors.LIGHT_GRAY);
+			}
+			if (this.appliedStatusEffectList.size() > VISIBLE_LIST_ELEMENTS) {
+				graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SCROLL_BAR_BACKGROUND_8_92_TEXTURE, this.width / 2 - 153, 34, 8, 92);
+				int k = (int) (81.0f * this.scrollAmount);
+				graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SCROLLER_VERTICAL_6_7_TEXTURE, this.width / 2 - 152, 35 + k, 6, 7);
+			}
+			graphics.text(this.font, STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 155, CommonColors.LIGHT_GRAY);
+			this.newAppliedStatusEffectIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
+			graphics.text(this.font, STATUS_EFFECT_DURATION_LABEL_TEXT, this.width / 2 + 51, 155, CommonColors.LIGHT_GRAY);
+			this.newAppliedStatusEffectDurationField.extractRenderState(graphics, mouseX, mouseY, a);
+			graphics.text(this.font, STATUS_EFFECT_AMPLIFIER_LABEL_TEXT, this.width / 2 + 105, 155, CommonColors.LIGHT_GRAY);
+			this.newAppliedStatusEffectAmplifierField.extractRenderState(graphics, mouseX, mouseY, a);
 		} else if (this.screenPage == ScreenPage.TRIGGER_SETTINGS) {
-			graphics.text(this.font, INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 55, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 35, CommonColors.LIGHT_GRAY);
 			this.interactionResultItemIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 90, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 70, CommonColors.LIGHT_GRAY);
 			this.interactionToolItemIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 125, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 105, CommonColors.LIGHT_GRAY);
 			this.usePreventingStatusEffectIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 160, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 140, CommonColors.LIGHT_GRAY);
 			this.requiredAdvancementIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, RECOVERY_TIMER_THRESHOLD_LABEL_TEXT, this.width / 2 - 153, 140, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, RECOVERY_TIMER_THRESHOLD_LABEL_TEXT, this.width / 2 - 153, 179, CommonColors.LIGHT_GRAY);
 			this.recoveryTimerThresholdField.extractRenderState(graphics, mouseX, mouseY, a);
 		}
 
@@ -253,12 +411,7 @@ public class FoodBlockScreen extends Screen {
 		ClientPlayNetworking.send(new UpdateFoodBlockPacket(
 				this.foodBlockEntity.getBlockPos(),
 				new FoodBlockEntity.FoodBlockData(
-						this.appliedStatusEffectIdentifierField.getValue(),
-						parseInt(this.appliedStatusEffectDurationField.getValue()),
-						parseInt(this.appliedStatusEffectAmplifierField.getValue()),
-						appliedStatusEffectAmbient,
-						appliedStatusEffectShowParticles,
-						appliedStatusEffectShowIcon,
+						this.appliedStatusEffectList,
 						this.interactionResultItemIdentifierField.getValue(),
 						this.interactionToolItemIdentifierField.getValue(),
 						this.usePreventingStatusEffectIdentifierField.getValue(),
@@ -283,7 +436,7 @@ public class FoodBlockScreen extends Screen {
 	}
 
 	public static enum ScreenPage implements StringRepresentable {
-		APPLIED_EFFECT("applied_effect"),
+		APPLIED_EFFECTS("applied_effects"),
 		TRIGGER_SETTINGS("interaction_settings");
 
 		private final String name;
@@ -302,7 +455,7 @@ public class FoodBlockScreen extends Screen {
 		}
 
 		public Component asText() {
-			return Component.translatable("gui.food_block.screenPage." + this.name);
+			return Component.translatable("gui.food_block.screen_page." + this.name);
 		}
 	}
 }

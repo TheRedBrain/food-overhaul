@@ -5,15 +5,13 @@ import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerMixin;
 import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.Identifier;
-
-import java.util.Optional;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -46,6 +44,8 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
 
 public class GenericFoodBlock extends BaseEntityBlock {
 	public static final MapCodec<GenericFoodBlock> CODEC = simpleCodec(GenericFoodBlock::new);
@@ -88,20 +88,10 @@ public class GenericFoodBlock extends BaseEntityBlock {
 	protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if (blockEntity instanceof FoodBlockEntity foodBlockEntity && state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
-			if (/*FoodOverhaul.SERVER_CONFIG.enable_food_block_config_screen.get() && */player.isCreative() && player.isShiftKeyDown()) {
+			if (player.isCreative() && player.isShiftKeyDown()) {
 				((DuckPlayerMixin) player).foodoverhaul$openFoodBlockScreen(foodBlockEntity);
 				return InteractionResult.SUCCESS;
 			} else if (genericFoodBlock.canPlayerInteract(world, pos, state, foodBlockEntity, player)) {
-				if (world.isClientSide()) {
-					if (tryEat(world, pos, state, player, foodBlockEntity).consumesAction()) {
-						return InteractionResult.SUCCESS;
-					}
-
-					if (player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-						return InteractionResult.CONSUME;
-					}
-				}
-
 				return tryEat(world, pos, state, player, foodBlockEntity);
 			}
 		}
@@ -160,24 +150,21 @@ public class GenericFoodBlock extends BaseEntityBlock {
 	protected static InteractionResult tryEat(LevelAccessor world, BlockPos pos, BlockState state, Player player, FoodBlockEntity foodBlockEntity) {
 		if (state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
 			FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
-			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(foodBlockData.applied_status_effect_identifier()));
-			if (optional_status_effect.isPresent()) {
-				if (PlayerHelper.tryEatOverhauledFood(player, optional_status_effect.get())) {
-					if (!world.isClientSide()) {
-						foodBlockEntity.setRecoveryTimer(0);
-						player.addEffect(new MobEffectInstance(
-								optional_status_effect.get(),
-								foodBlockData.applied_status_effect_duration(),
-								foodBlockData.applied_status_effect_amplifier(),
-								foodBlockData.applied_status_effect_ambient(),
-								foodBlockData.applied_status_effect_show_particles(),
-								foodBlockData.applied_status_effect_show_icon()
-						));
-					}
-					genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
-					return InteractionResult.SUCCESS_SERVER;
+
+			for (MobEffectInstance instance : foodBlockData.applied_status_effects()) {
+				if (!PlayerHelper.tryEatOverhauledFood(player, instance.getEffect())) {
+					return InteractionResult.PASS;
 				}
 			}
+
+			if (!world.isClientSide()) {
+				foodBlockEntity.setRecoveryTimer(0);
+				for (MobEffectInstance instance : foodBlockData.applied_status_effects()) {
+					player.addEffect(new MobEffectInstance(instance));
+				}
+			}
+			genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
+			return InteractionResult.SUCCESS;
 		}
 		return InteractionResult.PASS;
 	}

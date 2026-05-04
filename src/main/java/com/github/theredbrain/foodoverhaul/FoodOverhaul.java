@@ -1,16 +1,12 @@
 package com.github.theredbrain.foodoverhaul;
 
-import com.github.theredbrain.foodoverhaul.component.type.FoodBlockDataComponent;
-import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
 import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
-import com.github.theredbrain.foodoverhaul.registry.DataComponentRegistry;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.github.theredbrain.foodoverhaul.registry.ServerPacketRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -28,16 +24,11 @@ public class FoodOverhaul implements ModInitializer {
 
 	public static TagKey<MobEffect> FOOD_EFFECTS = TagKey.create(Registries.MOB_EFFECT, identifier("food_effects"));
 
-	public static DataComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA;
-
-	public static DataComponentType<FoodDisplayBlockDataComponent> FOOD_DISPLAY_BLOCK_DATA;
-
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Enjoy your overhauled food!");
 		SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
-		DataComponentRegistry.init();
 		BlockRegistry.init();
 		EntityRegistry.init();
 		ServerPacketRegistry.init();

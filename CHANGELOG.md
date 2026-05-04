@@ -1,3 +1,13 @@
+# 3.1.0
+
+## Changes
+
+- food blocks can now apply a list of effects
+
+## Fixes
+
+- fixed data component registration
+
 # 3.0.0
 
 - updated to 26.1.x

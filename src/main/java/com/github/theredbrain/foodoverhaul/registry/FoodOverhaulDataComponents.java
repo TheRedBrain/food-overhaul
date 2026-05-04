@@ -7,7 +7,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-public class DataComponentRegistry {
+public class FoodOverhaulDataComponents {
 
 //	static {
 //		FoodOverhaul.FOOD_BLOCK_DATA = Registry.register(
@@ -22,16 +22,15 @@ public class DataComponentRegistry {
 //		);
 //	}
 
-	public static void init() {
-		FoodOverhaul.FOOD_BLOCK_DATA = Registry.register(
-				BuiltInRegistries.DATA_COMPONENT_TYPE,
-				FoodOverhaul.identifier("food_block_data"),
-				DataComponentType.<FoodBlockDataComponent>builder().persistent(FoodBlockDataComponent.CODEC).networkSynchronized(FoodBlockDataComponent.PACKET_CODEC).cacheEncoding().build()
-		);
-		FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA = Registry.register(
-				BuiltInRegistries.DATA_COMPONENT_TYPE,
-				FoodOverhaul.identifier("food_display_block_data"),
-				DataComponentType.<FoodDisplayBlockDataComponent>builder().persistent(FoodDisplayBlockDataComponent.CODEC).networkSynchronized(FoodDisplayBlockDataComponent.PACKET_CODEC).cacheEncoding().build()
-		);
-	}
+	public static DataComponentType<FoodBlockDataComponent> FOOD_BLOCK_DATA = Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE,
+			FoodOverhaul.identifier("food_block_data"),
+			DataComponentType.<FoodBlockDataComponent>builder().persistent(FoodBlockDataComponent.CODEC).networkSynchronized(FoodBlockDataComponent.PACKET_CODEC).cacheEncoding().build()
+	);
+
+	public static DataComponentType<FoodDisplayBlockDataComponent> FOOD_DISPLAY_BLOCK_DATA = Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE,
+			FoodOverhaul.identifier("food_display_block_data"),
+			DataComponentType.<FoodDisplayBlockDataComponent>builder().persistent(FoodDisplayBlockDataComponent.CODEC).networkSynchronized(FoodDisplayBlockDataComponent.PACKET_CODEC).cacheEncoding().build()
+	);
 }

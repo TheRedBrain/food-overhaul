@@ -5,6 +5,7 @@ import com.github.theredbrain.foodoverhaul.block.FoodDisplayBlock;
 import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulDataComponents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -186,13 +187,13 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	@Override
 	protected void applyImplicitComponents(DataComponentGetter components) {
 		super.applyImplicitComponents(components);
-		this.foodDisplayBlockData = components.getOrDefault(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, FoodDisplayBlockDataComponent.DEFAULT).food_display_block_data();
+		this.foodDisplayBlockData = components.getOrDefault(FoodOverhaulDataComponents.FOOD_DISPLAY_BLOCK_DATA, FoodDisplayBlockDataComponent.DEFAULT).food_display_block_data();
 	}
 
 	@Override
 	protected void collectImplicitComponents(DataComponentMap.Builder builder) {
 		super.collectImplicitComponents(builder);
-		builder.set(FoodOverhaul.FOOD_DISPLAY_BLOCK_DATA, new FoodDisplayBlockDataComponent(this.foodDisplayBlockData));
+		builder.set(FoodOverhaulDataComponents.FOOD_DISPLAY_BLOCK_DATA, new FoodDisplayBlockDataComponent(this.foodDisplayBlockData));
 	}
 
 	public record FoodDisplayBlockData(

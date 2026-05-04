@@ -17,13 +17,13 @@ public record UpdateFoodBlockPacket(
 	public UpdateFoodBlockPacket(RegistryFriendlyByteBuf registryByteBuf) {
 		this(
 				registryByteBuf.readBlockPos(),
-				new FoodBlockEntity.FoodBlockData(registryByteBuf)
+				FoodBlockEntity.FoodBlockData.STREAM_CODEC.decode(registryByteBuf)
 		);
 	}
 
 	private void write(RegistryFriendlyByteBuf registryByteBuf) {
 		registryByteBuf.writeBlockPos(this.foodBlockPosition);
-		foodBlockData.write(registryByteBuf);
+		FoodBlockEntity.FoodBlockData.STREAM_CODEC.encode(registryByteBuf, this.foodBlockData);
 	}
 
 	@Override
