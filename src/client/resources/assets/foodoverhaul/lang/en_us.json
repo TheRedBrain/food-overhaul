@@ -4,7 +4,7 @@
 	"item.foodoverhaul.food_display_block": "Food Display Block",
 	"item.foodoverhaul.generic_food_block": "Generic Food Block",
 
-	"itemGroup.foodoverhaul.food_overhaul": "Food Overhaul",
+	"itemGroup.foodoverhaul.creative_mode_tab": "Food Overhaul",
 
 	"hud.message.food_eaten_already": "You can't eat more ",
 	"hud.message.max_food_eaten": "You are full.",

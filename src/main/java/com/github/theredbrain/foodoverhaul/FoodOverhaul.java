@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.item.CreativeModeTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,8 @@ public class FoodOverhaul implements ModInitializer {
 	public static final String MOD_ID = "foodoverhaul";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ServerConfig SERVER_CONFIG;
+
+	public static CreativeModeTab CREATIVE_MODE_TAB;
 
 	public static Holder<Attribute> MAX_FOOD_EFFECTS;
 
