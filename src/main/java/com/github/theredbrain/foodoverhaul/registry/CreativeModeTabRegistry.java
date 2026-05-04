@@ -13,18 +13,18 @@ import net.minecraft.world.item.Items;
 
 public class CreativeModeTabRegistry {
 
-	public static final ResourceKey<CreativeModeTab> FOOD_OVERHAUL_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, FoodOverhaul.identifier("food_overhaul"));
+	public static CreativeModeTab CREATIVE_MODE_TAB;
 
 	public static void init() {
-		FoodOverhaul.CREATIVE_MODE_TAB = FabricCreativeModeTab.builder()
+		CREATIVE_MODE_TAB = FabricCreativeModeTab.builder()
 				.icon(() -> new ItemStack(Items.APPLE))
 				.title(Component.translatable("itemGroup.foodoverhaul.creative_mode_tab"))
 				.build();
 
 		Registry.register(
 				BuiltInRegistries.CREATIVE_MODE_TAB,
-				FOOD_OVERHAUL_KEY,
-				FoodOverhaul.CREATIVE_MODE_TAB
+				FoodOverhaul.CREATIVE_MODE_TAB_KEY,
+				CREATIVE_MODE_TAB
 		);
 	}
 }
