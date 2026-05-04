@@ -2,6 +2,7 @@ package com.github.theredbrain.foodoverhaul;
 
 import com.github.theredbrain.foodoverhaul.config.ServerConfig;
 import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
+import com.github.theredbrain.foodoverhaul.registry.CreativeModeTabRegistry;
 import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
 import com.github.theredbrain.foodoverhaul.registry.ServerPacketRegistry;
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
@@ -29,6 +30,7 @@ public class FoodOverhaul implements ModInitializer {
 		LOGGER.info("Enjoy your overhauled food!");
 		SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
+		CreativeModeTabRegistry.init();
 		BlockRegistry.init();
 		EntityRegistry.init();
 		ServerPacketRegistry.init();

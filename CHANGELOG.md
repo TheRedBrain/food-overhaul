@@ -1,5 +1,9 @@
 # 3.1.0
 
+## Additions
+
+- added creative mode tab for Food Overhaul
+
 ## Changes
 
 - food blocks can now apply a list of effects
