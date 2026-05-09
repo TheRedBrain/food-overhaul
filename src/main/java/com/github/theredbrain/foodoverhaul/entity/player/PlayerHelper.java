@@ -3,6 +3,7 @@ package com.github.theredbrain.foodoverhaul.entity.player;
 import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.entity.effect.RemoveEffectsInTagStatusEffect;
 import com.github.theredbrain.foodoverhaul.entity.effect.RemoveFoodStatusEffect;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulConfigs;
 import com.google.common.collect.HashMultimap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -69,7 +70,7 @@ public class PlayerHelper {
 			Collection<MobEffectInstance> collection = player.getActiveEffects();
 			for (MobEffectInstance currentEffect : collection) {
 				if (currentEffect.getEffect() == mobEffectHolder) {
-					if (currentEffect.endsWithin(FoodOverhaul.SERVER_CONFIG.food_effect_duration_threshold_to_allow_eating.get())) {
+					if (currentEffect.endsWithin(FoodOverhaulConfigs.SERVER_CONFIG.food_effect_duration_threshold_to_allow_eating.get())) {
 						return true;
 					} else {
 						player.sendOverlayMessage(Component.translatable("hud.message.food_eaten_already").append(Component.translatable(currentEffect.getDescriptionId())));
@@ -91,7 +92,7 @@ public class PlayerHelper {
 	public static void updateNaturalAttributeModifiers(Player player) {
 		HashMultimap<Holder<Attribute>, AttributeModifier> toBeAdded = HashMultimap.create();
 		HashMultimap<Holder<Attribute>, AttributeModifier> toBeRemoved = HashMultimap.create();
-		addAttributeModifier(toBeAdded, toBeRemoved, FoodOverhaul.MAX_FOOD_EFFECTS, FoodOverhaul.identifier("natural_maximum_food_effects_modifier"), FoodOverhaul.SERVER_CONFIG.natural_maximum_food_effects.get());
+		addAttributeModifier(toBeAdded, toBeRemoved, FoodOverhaul.MAX_FOOD_EFFECTS, FoodOverhaul.identifier("natural_maximum_food_effects_modifier"), FoodOverhaulConfigs.SERVER_CONFIG.natural_maximum_food_effects.get());
 		if (!toBeRemoved.isEmpty()) {
 			player.getAttributes().removeAttributeModifiers(toBeRemoved);
 		}

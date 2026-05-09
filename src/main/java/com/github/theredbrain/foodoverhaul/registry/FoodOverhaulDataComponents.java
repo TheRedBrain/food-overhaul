@@ -33,4 +33,7 @@ public class FoodOverhaulDataComponents {
 			FoodOverhaul.identifier("food_display_block_data"),
 			DataComponentType.<FoodDisplayBlockDataComponent>builder().persistent(FoodDisplayBlockDataComponent.CODEC).networkSynchronized(FoodDisplayBlockDataComponent.PACKET_CODEC).cacheEncoding().build()
 	);
+
+	public static void bootstrap() {
+	}
 }

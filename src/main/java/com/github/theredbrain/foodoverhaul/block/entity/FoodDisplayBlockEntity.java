@@ -1,10 +1,9 @@
 package com.github.theredbrain.foodoverhaul.block.entity;
 
-import com.github.theredbrain.foodoverhaul.FoodOverhaul;
 import com.github.theredbrain.foodoverhaul.block.FoodDisplayBlock;
 import com.github.theredbrain.foodoverhaul.component.type.FoodDisplayBlockDataComponent;
 import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
-import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulEntities;
 import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulDataComponents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -37,7 +36,7 @@ public class FoodDisplayBlockEntity extends BlockEntity {
 	private FoodDisplayBlockData foodDisplayBlockData = FoodDisplayBlockData.DEFAULT;
 
 	public FoodDisplayBlockEntity(BlockPos pos, BlockState state) {
-		super(EntityRegistry.FOOD_DISPLAY_BLOCK_ENTITY, pos, state);
+		super(FoodOverhaulEntities.FOOD_DISPLAY_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override

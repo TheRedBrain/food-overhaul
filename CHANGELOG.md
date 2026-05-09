@@ -1,3 +1,9 @@
+# 3.2.0
+
+## Technical
+
+- improved mod stability by changing how things like configs, blocks, etc are registered
+
 # 3.1.0
 
 ## Additions

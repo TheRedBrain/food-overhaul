@@ -1,11 +1,11 @@
 package com.github.theredbrain.foodoverhaul;
 
-import com.github.theredbrain.foodoverhaul.config.ServerConfig;
-import com.github.theredbrain.foodoverhaul.registry.BlockRegistry;
-import com.github.theredbrain.foodoverhaul.registry.CreativeModeTabRegistry;
-import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
-import com.github.theredbrain.foodoverhaul.registry.ServerPacketRegistry;
-import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulBlocks;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulCreativeModeTabs;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulEntities;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulConfigs;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulDataComponents;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulServerPackets;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 public class FoodOverhaul implements ModInitializer {
 	public static final String MOD_ID = "foodoverhaul";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	public static ServerConfig SERVER_CONFIG;
 
 	public static final ResourceKey<CreativeModeTab> CREATIVE_MODE_TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, FoodOverhaul.identifier("food_overhaul"));
 
@@ -32,12 +31,14 @@ public class FoodOverhaul implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Enjoy your overhauled food!");
-		SERVER_CONFIG = ConfigApiJava.registerAndLoadConfig(ServerConfig::new);
 
-		CreativeModeTabRegistry.init();
-		BlockRegistry.init();
-		EntityRegistry.init();
-		ServerPacketRegistry.init();
+		FoodOverhaulBlocks.bootstrap();
+		FoodOverhaulConfigs.bootstrap();
+		FoodOverhaulDataComponents.bootstrap();
+		FoodOverhaulEntities.bootstrap();
+
+		FoodOverhaulCreativeModeTabs.init();
+		FoodOverhaulServerPackets.init();
 	}
 
 	public static Identifier identifier(String path) {

@@ -3,7 +3,7 @@ package com.github.theredbrain.foodoverhaul.block;
 import com.github.theredbrain.foodoverhaul.block.entity.FoodBlockEntity;
 import com.github.theredbrain.foodoverhaul.entity.player.DuckPlayerMixin;
 import com.github.theredbrain.foodoverhaul.entity.player.PlayerHelper;
-import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
@@ -81,7 +81,7 @@ public class GenericFoodBlock extends BaseEntityBlock {
 	@Override
 	@Nullable
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
-		return createTickerHelper(type, EntityRegistry.FOOD_BLOCK_ENTITY, FoodBlockEntity::tick);
+		return createTickerHelper(type, FoodOverhaulEntities.FOOD_BLOCK_ENTITY, FoodBlockEntity::tick);
 	}
 
 	@Override

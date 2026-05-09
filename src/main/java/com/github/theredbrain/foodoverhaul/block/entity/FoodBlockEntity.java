@@ -2,7 +2,7 @@ package com.github.theredbrain.foodoverhaul.block.entity;
 
 import com.github.theredbrain.foodoverhaul.block.GenericFoodBlock;
 import com.github.theredbrain.foodoverhaul.component.type.FoodBlockDataComponent;
-import com.github.theredbrain.foodoverhaul.registry.EntityRegistry;
+import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulEntities;
 import com.github.theredbrain.foodoverhaul.registry.FoodOverhaulDataComponents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -36,7 +36,7 @@ public class FoodBlockEntity extends BlockEntity {
 	}
 
 	public FoodBlockEntity(BlockPos pos, BlockState state) {
-		this(EntityRegistry.FOOD_BLOCK_ENTITY, pos, state);
+		this(FoodOverhaulEntities.FOOD_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override

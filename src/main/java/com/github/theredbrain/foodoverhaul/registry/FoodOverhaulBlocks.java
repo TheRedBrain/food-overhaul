@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.List;
 
-public class BlockRegistry {
+public class FoodOverhaulBlocks {
 
 	public static ResourceKey<Block> GENERIC_FOOD_BLOCK_BLOCK_KEY = ResourceKey.create(Registries.BLOCK, FoodOverhaul.identifier("generic_food_block"));
 	public static ResourceKey<Item> GENERIC_FOOD_BLOCK_ITEM_KEY = ResourceKey.create(Registries.ITEM, FoodOverhaul.identifier("generic_food_block"));
@@ -66,6 +66,6 @@ public class BlockRegistry {
 		return Registry.register(BuiltInRegistries.BLOCK, block_key, block);
 	}
 
-	public static void init() {
+	public static void bootstrap() {
 	}
 }

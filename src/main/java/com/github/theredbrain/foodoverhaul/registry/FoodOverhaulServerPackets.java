@@ -7,7 +7,7 @@ import com.github.theredbrain.foodoverhaul.network.packet.UpdateFoodDisplayBlock
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
-public class ServerPacketRegistry {
+public class FoodOverhaulServerPackets {
 
 	public static void init() {
 
