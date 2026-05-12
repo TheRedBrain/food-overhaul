@@ -18,6 +18,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+@Deprecated
 public class OverhauledPieBlock extends GenericFoodBlock {
 	public static final MapCodec<OverhauledPieBlock> CODEC = simpleCodec(OverhauledPieBlock::new);
 

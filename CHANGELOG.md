@@ -3,6 +3,8 @@
 ## Technical
 
 - improved mod stability by changing how things like configs, blocks, etc are registered
+- added a new AbstractShapedFoodBlock to be used by addons (heavily inspired by VectorWing and their mod Farmer's Delight)
+- deprecated OverhauledPieBlock
 
 # 3.1.0
 
