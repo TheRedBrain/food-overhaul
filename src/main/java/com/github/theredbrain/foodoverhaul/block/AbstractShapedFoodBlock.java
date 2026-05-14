@@ -16,8 +16,6 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -36,8 +34,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 	private static final Map<VoxelShape[], VoxelShape[][]> PLATED_SHAPE_CACHE = new IdentityHashMap<>();
 	private static final Map<VoxelShape[], VoxelShape[][]> ROTATED_SHAPE_CACHE = new IdentityHashMap<>();
 
-	public static final IntegerProperty BITES;
-	private final VoxelShape[][] combinedShapes;
+	protected final VoxelShape[][] combinedShapes;
 
 	@Override
 	protected abstract MapCodec<? extends AbstractShapedFoodBlock> codec();
@@ -45,70 +42,69 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 	public AbstractShapedFoodBlock(Properties settings, VoxelShape[] foodShapes, @Nullable VoxelShape containerShape) {
 		super(settings);
 		this.combinedShapes = containerShape == null ? buildRotatedFoodShapes(foodShapes) : buildPlatedFoodShapes(foodShapes, containerShape);
-		this.registerDefaultState(this.stateDefinition.any().setValue(BITES, 0));
-	}
-
-	@Override
-	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		super.createBlockStateDefinition(builder);
-		builder.add(BITES);
 	}
 
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-		return this.combinedShapes[this.getMaxBites() - state.getValue(BITES)][state.getValue(FACING).get2DDataValue()];
+		return this.combinedShapes[getMaxBites() - this.getBites(state)][state.getValue(FACING).get2DDataValue()];
 	}
 
 	@Override
-	protected void onSuccessfulInteraction(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+	protected void onSuccessfulInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 
-		super.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
+		super.onSuccessfulInteraction(levelAccessor, pos, state, foodBlockEntity, player);
 
-		int i = state.getValue(BITES);
-		world.gameEvent(player, GameEvent.EAT, pos);
-		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
-			if (i < getMaxBites() - 1) {
-				world.setBlock(pos, state.setValue(BITES, i + 1), Block.UPDATE_ALL);
+		int i = this.getBites(state);
+		levelAccessor.gameEvent(player, GameEvent.EAT, pos);
+		if (!foodBlockEntity.getFoodBlockData().reduce_uses()) {
+			if (i < this.getMaxBites() - 1) {
+				levelAccessor.setBlock(pos, this.setBites(state, i + 1), Block.UPDATE_ALL);
 			} else {
-				world.removeBlock(pos, false);
-				world.gameEvent(player, GameEvent.BLOCK_DESTROY, pos);
+				levelAccessor.removeBlock(pos, false);
+				levelAccessor.gameEvent(player, GameEvent.BLOCK_DESTROY, pos);
 			}
 		}
 	}
 
-	protected void onSuccessfulItemInteraction(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+	@Override
+	protected void onSuccessfulItemInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 
-		super.onSuccessfulItemInteraction(world, pos, state, foodBlockEntity, player);
+		super.onSuccessfulItemInteraction(levelAccessor, pos, state, foodBlockEntity, player);
 
-		int i = state.getValue(BITES);
-		world.playSound(player, pos, SoundEvents.WOOL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
-		world.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
+		int i = this.getBites(state);
+		levelAccessor.playSound(player, pos, SoundEvents.WOOL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
+		levelAccessor.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+		if (!foodBlockEntity.getFoodBlockData().reduce_uses()) {
 			if (i < this.getMaxBites() - 1) {
-				world.setBlock(pos, state.setValue(BITES, i + 1), Block.UPDATE_ALL);
+				levelAccessor.setBlock(pos, this.setBites(state, i + 1), Block.UPDATE_ALL);
 			} else {
-				world.removeBlock(pos, false);
-				world.gameEvent(player, GameEvent.BLOCK_DESTROY, pos);
+				levelAccessor.removeBlock(pos, false);
+				levelAccessor.gameEvent(player, GameEvent.BLOCK_DESTROY, pos);
 			}
 		}
+	}
+
+	@Override
+	protected boolean isBlockInteractable(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+		return super.isBlockInteractable(levelAccessor, pos, state, foodBlockEntity, player) && foodBlockEntity.getFoodBlockData().consume_last_use() || this.getBites(state) < this.getMaxBites() - 1;
+	}
+
+	protected boolean providesEffectsOnInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
+		return this.getBites(state) < this.getMaxBites() - 1 || foodBlockEntity.getFoodBlockData().last_use_provides_effects();
 	}
 
 	@Override
 	protected void onRecoveryTick(Level world, BlockPos pos, BlockState state) {
 
-		int i = state.getValue(BITES);
+		int i = this.getBites(state);
 		if (i > 0) {
-			world.setBlock(pos, state.setValue(BITES, i - 1), Block.UPDATE_ALL);
+			world.setBlock(pos, this.setBites(state, i - 1), Block.UPDATE_ALL);
 		}
-	}
-
-	public int getMaxBites() {
-		return 4;
 	}
 
 	@Override
 	protected int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
-		return this.getMaxBites() - state.getValue(BITES);
+		return this.getMaxBites() - this.getBites(state);
 	}
 
 	@Override
@@ -120,6 +116,12 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 	protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
 		return canSupportRigidBlock(level, pos.below());
 	}
+
+	public abstract int getMaxBites();
+
+	protected abstract int getBites(BlockState state);
+
+	protected abstract BlockState setBites(BlockState state, int value);
 
 	/**
 	 * Code by VectorWing as implemented in Farmer's Delight
@@ -187,14 +189,14 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		return PLATED_SHAPE_CACHE.computeIfAbsent(dishShapes, (shapes) -> {
 			VoxelShape[][] result = new VoxelShape[shapes.length + 1][4];
 
-			for(int j = 0; j < 4; ++j) {
+			for (int j = 0; j < 4; ++j) {
 				result[0][j] = plateShape;
 			}
 
-			for(int i = 0; i < shapes.length; ++i) {
+			for (int i = 0; i < shapes.length; ++i) {
 				Map<Direction, VoxelShape> rotatedRoast = getShapesRotatedFromNorth(shapes[i]);
 
-				for(Map.Entry<Direction, VoxelShape> entry : rotatedRoast.entrySet()) {
+				for (Map.Entry<Direction, VoxelShape> entry : rotatedRoast.entrySet()) {
 					result[i + 1][entry.getKey().get2DDataValue()] = Shapes.join(plateShape, entry.getValue(), BooleanOp.OR);
 				}
 			}
@@ -207,10 +209,10 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		return ROTATED_SHAPE_CACHE.computeIfAbsent(dishShapes, (shapes) -> {
 			VoxelShape[][] result = new VoxelShape[shapes.length][4];
 
-			for(int i = 0; i < shapes.length; ++i) {
+			for (int i = 0; i < shapes.length; ++i) {
 				Map<Direction, VoxelShape> rotated = getShapesRotatedFromNorth(shapes[i]);
 
-				for(Map.Entry<Direction, VoxelShape> entry : rotated.entrySet()) {
+				for (Map.Entry<Direction, VoxelShape> entry : rotated.entrySet()) {
 					result[i][entry.getKey().get2DDataValue()] = entry.getValue();
 				}
 			}
@@ -219,8 +221,4 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		});
 	}
 	// endregion shapes
-
-	static {
-		BITES = IntegerProperty.create("bites", 0, 3);
-	}
 }
