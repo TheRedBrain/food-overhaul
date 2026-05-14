@@ -119,7 +119,9 @@ public class FoodBlockEntity extends BlockEntity {
 			String use_preventing_status_effect_identifier,
 			String required_advancement_identifier,
 			int recovery_timer_threshold,
-			boolean infinite_uses
+			boolean reduce_uses,
+			boolean last_use_provides_effects,
+			boolean consume_last_use
 	) {
 
 		public static final FoodBlockData DEFAULT = new FoodBlockData(
@@ -129,7 +131,9 @@ public class FoodBlockEntity extends BlockEntity {
 				"",
 				"",
 				0,
-				false
+				true,
+				true,
+				true
 		);
 
 		public static final Codec<FoodBlockData> CODEC = RecordCodecBuilder.create(
@@ -140,7 +144,9 @@ public class FoodBlockEntity extends BlockEntity {
 								Codec.STRING.fieldOf("use_preventing_status_effect_identifier").forGetter(FoodBlockData::use_preventing_status_effect_identifier),
 								Codec.STRING.fieldOf("required_advancement_identifier").forGetter(FoodBlockData::required_advancement_identifier),
 								Codec.INT.fieldOf("recovery_timer_threshold").forGetter(FoodBlockData::recovery_timer_threshold),
-								Codec.BOOL.fieldOf("infinite_uses").forGetter(FoodBlockData::infinite_uses)
+								Codec.BOOL.fieldOf("reduce_uses").forGetter(FoodBlockData::reduce_uses),
+								Codec.BOOL.fieldOf("last_use_provides_effects").forGetter(FoodBlockData::last_use_provides_effects),
+								Codec.BOOL.fieldOf("consume_last_use").forGetter(FoodBlockData::consume_last_use)
 						)
 						.apply(instance, FoodBlockData::new)
 		);
@@ -159,7 +165,11 @@ public class FoodBlockEntity extends BlockEntity {
 				ByteBufCodecs.INT,
 				FoodBlockData::recovery_timer_threshold,
 				ByteBufCodecs.BOOL,
-				FoodBlockData::infinite_uses,
+				FoodBlockData::reduce_uses,
+				ByteBufCodecs.BOOL,
+				FoodBlockData::last_use_provides_effects,
+				ByteBufCodecs.BOOL,
+				FoodBlockData::consume_last_use,
 				FoodBlockData::new
 		);
 	}

@@ -58,8 +58,12 @@ public class FoodBlockScreen extends Screen {
 	private static final Component USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT = Component.translatable("gui.food_block.use_preventing_status_effect_identifier_label");
 	private static final Component REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT = Component.translatable("gui.food_block.required_advancement_identifier_label");
 	private static final Component RECOVERY_TIMER_THRESHOLD_LABEL_TEXT = Component.translatable("gui.food_block.recovery_timer_threshold_label");
-	private static final Component INFINITE_USE_TRUE_LABEL_TEXT = Component.translatable("gui.food_block.infinite_use_true_label");
-	private static final Component INFINITE_USE_FALSE_LABEL_TEXT = Component.translatable("gui.food_block.infinite_use_false_label");
+	private static final Component REDUCE_USES_TRUE_LABEL_TEXT = Component.translatable("gui.food_block.reduce_uses_true_label");
+	private static final Component REDUCE_USES_FALSE_LABEL_TEXT = Component.translatable("gui.food_block.reduce_uses_false_label");
+	private static final Component LAST_USE_PROVIDES_EFFECTS_TRUE_LABEL_TEXT = Component.translatable("gui.food_block.last_use_provides_effects_true_label");
+	private static final Component LAST_USE_PROVIDES_EFFECTS_FALSE_LABEL_TEXT = Component.translatable("gui.food_block.last_use_provides_effects_false_label");
+	private static final Component CONSUME_LAST_USE_TRUE_LABEL_TEXT = Component.translatable("gui.food_block.consume_last_use_true_label");
+	private static final Component CONSUME_LAST_USE_FALSE_LABEL_TEXT = Component.translatable("gui.food_block.consume_last_use_false_label");
 	private final FoodBlockEntity foodBlockEntity;
 	private final FoodBlockEntity.FoodBlockData foodBlockData;
 	private CycleButton<ScreenPage> cycleScreenPageButton;
@@ -86,8 +90,12 @@ public class FoodBlockScreen extends Screen {
 	private EditBox usePreventingStatusEffectIdentifierField;
 	private EditBox requiredAdvancementIdentifierField;
 	private EditBox recoveryTimerThresholdField;
-	private boolean infiniteUses;
-	private CycleButton<Boolean> toggleInfiniteUsesButton;
+	private boolean reduceUses;
+	private boolean lastUseProvidesEffects;
+	private boolean consumeLastUse;
+	private CycleButton<Boolean> toggleReduceUsesButton;
+	private CycleButton<Boolean> toggleLastUseProvidesEffectsButton;
+	private CycleButton<Boolean> toggleConsumeLastUseButton;
 	private int scrollPosition = 0;
 	private float scrollAmount = 0.0f;
 	private boolean mouseClicked = false;
@@ -187,34 +195,48 @@ public class FoodBlockScreen extends Screen {
 		}));
 
 
-		this.interactionResultItemIdentifierField = new EditBox(this.font, this.width / 2 - 154, 45, 300, 20, Component.empty());
+		int labelWidth = this.font.width(INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT);
+		this.interactionResultItemIdentifierField = new EditBox(this.font, this.width / 2 - 149 + labelWidth, 53, 300 - 5 - labelWidth, 20, Component.empty());
 		this.interactionResultItemIdentifierField.setMaxLength(128);
 		this.interactionResultItemIdentifierField.setValue(this.foodBlockData.interaction_result_item_identifier());
 		this.addWidget(this.interactionResultItemIdentifierField);
 
-		this.interactionToolItemIdentifierField = new EditBox(this.font, this.width / 2 - 154, 80, 300, 20, Component.empty());
+		labelWidth = this.font.width(INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT);
+		this.interactionToolItemIdentifierField = new EditBox(this.font, this.width / 2 - 149 + labelWidth, 77, 300 - 5 - labelWidth, 20, Component.empty());
 		this.interactionToolItemIdentifierField.setMaxLength(128);
 		this.interactionToolItemIdentifierField.setValue(this.foodBlockData.interaction_tool_item_identifier());
 		this.addWidget(this.interactionToolItemIdentifierField);
 
-		this.usePreventingStatusEffectIdentifierField = new EditBox(this.font, this.width / 2 - 154, 115, 300, 20, Component.empty());
+		labelWidth = this.font.width(USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT);
+		this.usePreventingStatusEffectIdentifierField = new EditBox(this.font, this.width / 2 - 149 + labelWidth, 101, 300 - 5 - labelWidth, 20, Component.empty());
 		this.usePreventingStatusEffectIdentifierField.setMaxLength(128);
 		this.usePreventingStatusEffectIdentifierField.setValue(this.foodBlockData.use_preventing_status_effect_identifier());
 		this.addWidget(this.usePreventingStatusEffectIdentifierField);
 
-		this.requiredAdvancementIdentifierField = new EditBox(this.font, this.width / 2 - 154, 150, 300, 20, Component.empty());
+		labelWidth = this.font.width(REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT);
+		this.requiredAdvancementIdentifierField = new EditBox(this.font, this.width / 2 - 149 + labelWidth, 125, 300 - 5 - labelWidth, 20, Component.empty());
 		this.requiredAdvancementIdentifierField.setMaxLength(128);
 		this.requiredAdvancementIdentifierField.setValue(this.foodBlockData.required_advancement_identifier());
 		this.addWidget(this.requiredAdvancementIdentifierField);
 
-		this.recoveryTimerThresholdField = new EditBox(this.font, this.width / 2 - 154, 189, 150, 20, Component.empty());
+		this.recoveryTimerThresholdField = new EditBox(this.font, this.width / 2 - 154, 165, 130, 20, Component.empty());
 		this.recoveryTimerThresholdField.setMaxLength(128);
 		this.recoveryTimerThresholdField.setValue(Integer.toString(this.foodBlockData.recovery_timer_threshold()));
 		this.addWidget(this.recoveryTimerThresholdField);
 
-		this.infiniteUses = this.foodBlockData.infinite_uses();
-		this.toggleInfiniteUsesButton = this.addRenderableWidget(CycleButton.booleanBuilder(INFINITE_USE_TRUE_LABEL_TEXT, INFINITE_USE_FALSE_LABEL_TEXT, this.infiniteUses).displayOnlyValue().create(this.width / 2 + 4, 189, 150, 20, Component.empty(), (button, infiniteUses) -> {
-			this.infiniteUses = infiniteUses;
+		this.lastUseProvidesEffects = this.foodBlockData.last_use_provides_effects();
+		this.toggleLastUseProvidesEffectsButton = this.addRenderableWidget(CycleButton.booleanBuilder(LAST_USE_PROVIDES_EFFECTS_TRUE_LABEL_TEXT, LAST_USE_PROVIDES_EFFECTS_FALSE_LABEL_TEXT, this.lastUseProvidesEffects).displayOnlyValue().create(this.width / 2 - 16, 165, 170, 20, Component.empty(), (button, lastUseProvidesEffects) -> {
+			this.lastUseProvidesEffects = lastUseProvidesEffects;
+		}));
+
+		this.reduceUses = this.foodBlockData.reduce_uses();
+		this.toggleReduceUsesButton = this.addRenderableWidget(CycleButton.booleanBuilder(REDUCE_USES_TRUE_LABEL_TEXT, REDUCE_USES_FALSE_LABEL_TEXT, this.reduceUses).displayOnlyValue().create(this.width / 2 - 154, 189, 130, 20, Component.empty(), (button, infiniteUses) -> {
+			this.reduceUses = infiniteUses;
+		}));
+
+		this.consumeLastUse = this.foodBlockData.consume_last_use();
+		this.toggleConsumeLastUseButton = this.addRenderableWidget(CycleButton.booleanBuilder(CONSUME_LAST_USE_TRUE_LABEL_TEXT, CONSUME_LAST_USE_FALSE_LABEL_TEXT, this.consumeLastUse).displayOnlyValue().create(this.width / 2 - 16, 189, 170, 20, Component.empty(), (button, consumeLastUse) -> {
+			this.consumeLastUse = consumeLastUse;
 		}));
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.done()).bounds(this.width / 2 - 4 - 150, 213, 150, 20).build());
@@ -243,7 +265,9 @@ public class FoodBlockScreen extends Screen {
 		this.usePreventingStatusEffectIdentifierField.setVisible(false);
 		this.requiredAdvancementIdentifierField.setVisible(false);
 		this.recoveryTimerThresholdField.setVisible(false);
-		this.toggleInfiniteUsesButton.visible = false;
+		this.toggleReduceUsesButton.visible = false;
+		this.toggleLastUseProvidesEffectsButton.visible = false;
+		this.toggleConsumeLastUseButton.visible = false;
 
 		this.cycleScreenPageButton.visible = true;
 		if (this.screenPage == ScreenPage.APPLIED_EFFECTS) {
@@ -278,7 +302,9 @@ public class FoodBlockScreen extends Screen {
 			this.usePreventingStatusEffectIdentifierField.setVisible(true);
 			this.requiredAdvancementIdentifierField.setVisible(true);
 			this.recoveryTimerThresholdField.setVisible(true);
-			this.toggleInfiniteUsesButton.visible = true;
+			this.toggleReduceUsesButton.visible = true;
+			this.toggleLastUseProvidesEffectsButton.visible = true;
+			this.toggleConsumeLastUseButton.visible = true;
 
 		}
 	}
@@ -290,7 +316,9 @@ public class FoodBlockScreen extends Screen {
 		boolean bool = this.newAppliedStatusEffectAmbient;
 		boolean bool1 = this.newAppliedStatusEffectShowParticles;
 		boolean bool2 = this.newAppliedStatusEffectShowIcon;
-		boolean bool3 = this.infiniteUses;
+		boolean bool3 = this.reduceUses;
+		boolean bool4 = this.lastUseProvidesEffects;
+		boolean bool5 = this.consumeLastUse;
 		String string = this.newAppliedStatusEffectIdentifierField.getValue();
 		String string1 = this.newAppliedStatusEffectDurationField.getValue();
 		String string2 = this.newAppliedStatusEffectAmplifierField.getValue();
@@ -310,8 +338,12 @@ public class FoodBlockScreen extends Screen {
 		this.toggleNewAppliedStatusEffectShowParticlesButton.setValue(bool1);
 		this.newAppliedStatusEffectShowIcon = bool2;
 		this.toggleNewAppliedStatusEffectShowIconButton.setValue(bool2);
-		this.infiniteUses = bool3;
-		this.toggleInfiniteUsesButton.setValue(bool3);
+		this.reduceUses = bool3;
+		this.toggleReduceUsesButton.setValue(bool3);
+		this.lastUseProvidesEffects = bool4;
+		this.toggleLastUseProvidesEffectsButton.setValue(bool4);
+		this.consumeLastUse = bool5;
+		this.toggleConsumeLastUseButton.setValue(bool5);
 		this.newAppliedStatusEffectIdentifierField.setValue(string);
 		this.newAppliedStatusEffectDurationField.setValue(string1);
 		this.newAppliedStatusEffectAmplifierField.setValue(string2);
@@ -388,15 +420,15 @@ public class FoodBlockScreen extends Screen {
 			graphics.text(this.font, STATUS_EFFECT_AMPLIFIER_LABEL_TEXT, this.width / 2 + 105, 155, CommonColors.LIGHT_GRAY);
 			this.newAppliedStatusEffectAmplifierField.extractRenderState(graphics, mouseX, mouseY, a);
 		} else if (this.screenPage == ScreenPage.TRIGGER_SETTINGS) {
-			graphics.text(this.font, INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 35, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, INTERACTION_RESULT_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 59, CommonColors.LIGHT_GRAY);
 			this.interactionResultItemIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 70, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, INTERACTION_TOOL_ITEM_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 83, CommonColors.LIGHT_GRAY);
 			this.interactionToolItemIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 105, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, USE_PREVENTING_STATUS_EFFECT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 107, CommonColors.LIGHT_GRAY);
 			this.usePreventingStatusEffectIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 140, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, REQUIRED_ADVANCEMENT_IDENTIFIER_LABEL_TEXT, this.width / 2 - 153, 131, CommonColors.LIGHT_GRAY);
 			this.requiredAdvancementIdentifierField.extractRenderState(graphics, mouseX, mouseY, a);
-			graphics.text(this.font, RECOVERY_TIMER_THRESHOLD_LABEL_TEXT, this.width / 2 - 153, 179, CommonColors.LIGHT_GRAY);
+			graphics.text(this.font, RECOVERY_TIMER_THRESHOLD_LABEL_TEXT, this.width / 2 - 153, 155, CommonColors.LIGHT_GRAY);
 			this.recoveryTimerThresholdField.extractRenderState(graphics, mouseX, mouseY, a);
 		}
 
@@ -417,7 +449,9 @@ public class FoodBlockScreen extends Screen {
 						this.usePreventingStatusEffectIdentifierField.getValue(),
 						this.requiredAdvancementIdentifierField.getValue(),
 						parseInt(this.recoveryTimerThresholdField.getValue()),
-						infiniteUses
+						reduceUses,
+						lastUseProvidesEffects,
+						consumeLastUse
 				)
 		));
 		return true;

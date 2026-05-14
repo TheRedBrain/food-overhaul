@@ -130,7 +130,9 @@ public class GenericFoodBlock extends BaseEntityBlock {
 							player.setItemInHand(hand, stack.isEmpty() ? ItemStack.EMPTY : stack);
 //							world.emitGameEvent(player, GameEvent.FLUID_PICKUP, pos); // TODO custom id
 						}
-						player.getInventory().placeItemBackInInventory(interactionResultItem.getDefaultInstance());
+						if (providesEffectsOnInteraction(world, pos, state, foodBlockEntity)) {
+							player.getInventory().placeItemBackInInventory(interactionResultItem.getDefaultInstance());
+						}
 						if (!world.isClientSide()) {
 							player.awardStat(Stats.ITEM_USED.get(interactionToolItem));
 						}
@@ -145,18 +147,20 @@ public class GenericFoodBlock extends BaseEntityBlock {
 
 	protected static InteractionResult tryEat(LevelAccessor world, BlockPos pos, BlockState state, Player player, FoodBlockEntity foodBlockEntity) {
 		if (state.getBlock() instanceof GenericFoodBlock genericFoodBlock) {
-			FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
+			if (genericFoodBlock.providesEffectsOnInteraction(world, pos, state, foodBlockEntity)) {
+				FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
 
-			for (MobEffectInstance instance : foodBlockData.applied_status_effects()) {
-				if (!PlayerHelper.tryEatOverhauledFood(player, instance.getEffect())) {
-					return InteractionResult.PASS;
-				}
-			}
-
-			if (!world.isClientSide()) {
-				foodBlockEntity.setRecoveryTimer(0);
 				for (MobEffectInstance instance : foodBlockData.applied_status_effects()) {
-					player.addEffect(new MobEffectInstance(instance));
+					if (!PlayerHelper.tryEatOverhauledFood(player, instance.getEffect())) {
+						return InteractionResult.PASS;
+					}
+				}
+
+				if (!world.isClientSide()) {
+					foodBlockEntity.setRecoveryTimer(0);
+					for (MobEffectInstance instance : foodBlockData.applied_status_effects()) {
+						player.addEffect(new MobEffectInstance(instance));
+					}
 				}
 			}
 			genericFoodBlock.onSuccessfulInteraction(world, pos, state, foodBlockEntity, player);
@@ -165,31 +169,38 @@ public class GenericFoodBlock extends BaseEntityBlock {
 		return InteractionResult.PASS;
 	}
 
-	protected boolean canPlayerInteract(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
-		boolean canPlayerInteract = true;
+	protected boolean canPlayerInteract(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 		FoodBlockEntity.FoodBlockData foodBlockData = foodBlockEntity.getFoodBlockData();
 		String usePreventingStatusEffectIdentifier = foodBlockData.use_preventing_status_effect_identifier();
 		if (!usePreventingStatusEffectIdentifier.isEmpty()) {
 			Optional<Holder.Reference<MobEffect>> optional_status_effect = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(usePreventingStatusEffectIdentifier));
-			if (optional_status_effect.isPresent()) {
-				canPlayerInteract = !player.hasEffect(optional_status_effect.get());
+			if (optional_status_effect.isPresent() && player.hasEffect(optional_status_effect.get())) {
+				return false;
 			}
 		}
 		String requiredAdvancementIdentifier = foodBlockData.required_advancement_identifier();
-		if (canPlayerInteract && !requiredAdvancementIdentifier.isEmpty() && world.getServer() != null && player instanceof ServerPlayer serverPlayerEntity) {
-			ServerAdvancementManager advancementLoader = world.getServer().getAdvancements();
+		if (!requiredAdvancementIdentifier.isEmpty() && levelAccessor.getServer() != null && player instanceof ServerPlayer serverPlayerEntity) {
+			ServerAdvancementManager advancementLoader = levelAccessor.getServer().getAdvancements();
 			AdvancementHolder advancementEntry = advancementLoader.get(Identifier.parse(usePreventingStatusEffectIdentifier));
-			if (advancementEntry != null) {
-				canPlayerInteract = serverPlayerEntity.getAdvancements().getOrStartProgress(advancementEntry).isDone();
+			if (advancementEntry != null && !serverPlayerEntity.getAdvancements().getOrStartProgress(advancementEntry).isDone()) {
+				return false;
 			}
 		}
-		return canPlayerInteract;
+		return isBlockInteractable(levelAccessor, pos, state, foodBlockEntity, player);
 	}
 
-	protected void onSuccessfulInteraction(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+	protected void onSuccessfulInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
 	}
 
-	protected void onSuccessfulItemInteraction(LevelAccessor world, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+	protected void onSuccessfulItemInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+	}
+
+	protected boolean isBlockInteractable(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
+		return true;
+	}
+
+	protected boolean providesEffectsOnInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
+		return true;
 	}
 
 	public static void recoveryTick(Level world, BlockPos pos, BlockState state) {

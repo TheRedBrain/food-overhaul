@@ -53,7 +53,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 
 		int i = state.getValue(BITES);
 		world.gameEvent(player, GameEvent.EAT, pos);
-		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
+		if (!foodBlockEntity.getFoodBlockData().reduce_uses()) {
 			if (i < getMaxBites() - 1) {
 				world.setBlock(pos, state.setValue(BITES, i + 1), Block.UPDATE_ALL);
 			} else {
@@ -70,7 +70,7 @@ public class OverhauledPieBlock extends GenericFoodBlock {
 		int i = state.getValue(BITES);
 		world.playSound(player, pos, SoundEvents.WOOL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
 		world.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-		if (!foodBlockEntity.getFoodBlockData().infinite_uses()) {
+		if (!foodBlockEntity.getFoodBlockData().reduce_uses()) {
 			if (i < this.getMaxBites() - 1) {
 				world.setBlock(pos, state.setValue(BITES, i + 1), Block.UPDATE_ALL);
 			} else {

@@ -41,6 +41,8 @@ public class FoodOverhaulBlocks {
 			"",
 			"",
 			0,
+			false,
+			true,
 			false
 	);
 
