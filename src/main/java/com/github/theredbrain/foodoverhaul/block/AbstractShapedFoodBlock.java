@@ -56,7 +56,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 
 		int i = this.getBites(state);
 		levelAccessor.gameEvent(player, GameEvent.EAT, pos);
-		if (!foodBlockEntity.getFoodBlockData().reduce_uses()) {
+		if (foodBlockEntity.getFoodBlockData().reduce_uses()) {
 			if (i < this.getMaxBites() - 1) {
 				levelAccessor.setBlock(pos, this.setBites(state, i + 1), Block.UPDATE_ALL);
 			} else {
@@ -74,7 +74,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		int i = this.getBites(state);
 		levelAccessor.playSound(player, pos, SoundEvents.WOOL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
 		levelAccessor.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-		if (!foodBlockEntity.getFoodBlockData().reduce_uses()) {
+		if (foodBlockEntity.getFoodBlockData().reduce_uses()) {
 			if (i < this.getMaxBites() - 1) {
 				levelAccessor.setBlock(pos, this.setBites(state, i + 1), Block.UPDATE_ALL);
 			} else {
