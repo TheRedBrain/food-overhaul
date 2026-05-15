@@ -26,9 +26,9 @@ The limit is controlled by an entity attribute called **_foodoverhaul:max_food_e
 The player doesn't have to wait until an effect is completely gone to refresh it.
 When a food effect is running out, it's corresponding food item can be consumed again. The exact threshold after which this is possible is set in the server config.
 
-Food Overhaul adds the "foodoverhaul:remove_effects_in_tag" consume effect typ. It works very similar to the "minecraft:remove_effects" consume effect, but also works with status effect tags.
+Food Overhaul implements the RemoveEffectsInTagStatusEffect mob effect. This can be used by add-on mods to add status effects that can remove other status effects.
 
-> This can be used to remove all active food effects.
+An example for this is the Rotten Flesh food effect added by [Food Overhaul - Vanilla Foods](https://github.com/TheRedBrain/food-overhaul-vanilla-foods)
 
 ## Customization
 
