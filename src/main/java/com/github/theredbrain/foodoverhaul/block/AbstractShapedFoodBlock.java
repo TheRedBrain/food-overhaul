@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -46,7 +47,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-		return this.combinedShapes[getMaxBites() - this.getBites(state)][state.getValue(FACING).get2DDataValue()];
+		return this.combinedShapes[Math.max(0, getMaxUses() - this.getBites(state) - 1)][state.getValue(FACING).get2DDataValue()];
 	}
 
 	@Override
@@ -57,7 +58,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		int i = this.getBites(state);
 		levelAccessor.gameEvent(player, GameEvent.EAT, pos);
 		if (foodBlockEntity.getFoodBlockData().reduce_uses()) {
-			if (i < this.getMaxBites() - 1) {
+			if (i < this.getMaxUses() - 1) {
 				levelAccessor.setBlock(pos, this.setBites(state, i + 1), Block.UPDATE_ALL);
 			} else {
 				levelAccessor.removeBlock(pos, false);
@@ -75,7 +76,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		levelAccessor.playSound(player, pos, SoundEvents.WOOL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
 		levelAccessor.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
 		if (foodBlockEntity.getFoodBlockData().reduce_uses()) {
-			if (i < this.getMaxBites() - 1) {
+			if (i < this.getMaxUses() - 1) {
 				levelAccessor.setBlock(pos, this.setBites(state, i + 1), Block.UPDATE_ALL);
 			} else {
 				levelAccessor.removeBlock(pos, false);
@@ -86,11 +87,11 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 
 	@Override
 	protected boolean isBlockInteractable(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity, Player player) {
-		return super.isBlockInteractable(levelAccessor, pos, state, foodBlockEntity, player) && foodBlockEntity.getFoodBlockData().consume_last_use() || this.getBites(state) < this.getMaxBites() - 1;
+		return super.isBlockInteractable(levelAccessor, pos, state, foodBlockEntity, player) && foodBlockEntity.getFoodBlockData().consume_last_use() || this.getBites(state) < this.getMaxUses() - 1;
 	}
 
 	protected boolean providesEffectsOnInteraction(LevelAccessor levelAccessor, BlockPos pos, BlockState state, FoodBlockEntity foodBlockEntity) {
-		return this.getBites(state) < this.getMaxBites() - 1 || foodBlockEntity.getFoodBlockData().last_use_provides_effects();
+		return this.getBites(state) < this.getMaxUses() - 1 || foodBlockEntity.getFoodBlockData().last_use_provides_effects();
 	}
 
 	@Override
@@ -104,7 +105,12 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 
 	@Override
 	protected int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
-		return this.getMaxBites() - this.getBites(state);
+		return this.getMaxUses() - this.getBites(state);
+	}
+
+	@Override
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
+		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
 	}
 
 	@Override
@@ -117,7 +123,7 @@ public abstract class AbstractShapedFoodBlock extends GenericFoodBlock {
 		return canSupportRigidBlock(level, pos.below());
 	}
 
-	public abstract int getMaxBites();
+	public abstract int getMaxUses();
 
 	protected abstract int getBites(BlockState state);
 
